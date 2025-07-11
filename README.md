@@ -1,23 +1,27 @@
 ## Build Instructions
 
-**Setup Kas**
+### Setup Kas
+
 ```
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Setup Layers**
+### Setup Layers
+
 ```
 kas checkout
 ```
 
-**Build Image**
+### Build Image
+
 ```
 kas-container build
 ```
 
-**Flashing Image**
+### Flashing Image
+
 Image is found at: `./build/tmp/deploy/images/gigrouter/demo-image-base-gigrouter.rootfs-[timestamp].tegraflash.tar.gz`
 
 Extract that archive on a pi connected to the gigrouter.
