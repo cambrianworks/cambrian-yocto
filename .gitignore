@@ -1,0 +1,9 @@
+# Ignore temporary files used by text editors
+*.swp
+
+# Ignore transient build output directories
+build/
+
+# Ignore working directories
+venv/
+repos/
