@@ -1,0 +1,6 @@
+header:
+  version: 14
+  includes:
+    - ./kas/gigrouter-base-kas-config.yml
+
+machine: gigrouter

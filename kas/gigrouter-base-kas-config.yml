@@ -6,8 +6,6 @@ distro: tegrademo
 target:
   - demo-image-base
 
-machine: gigrouter
-
 repos:
   tegra-demo-distro:
     url: https://github.com/OE4T/tegra-demo-distro
@@ -60,4 +58,6 @@ local_conf_header:
     # OE4t setup-env.sh style environment, as they modify bblayers.conf
     # and expect additional information on the host.
     INHERIT:remove = "tegra-support-sanity distro_layer_buildinfo"
-    EXTRA_IMAGE_FEATURES ?= "allow-empty-password empty-root-password allow-root-login"
+    PACKAGE_CLASSES += "package_deb"
+    EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
+    EXTRA_IMAGE_FEATURES ?= "allow-empty-password empty-root-password allow-root-login package-management"
