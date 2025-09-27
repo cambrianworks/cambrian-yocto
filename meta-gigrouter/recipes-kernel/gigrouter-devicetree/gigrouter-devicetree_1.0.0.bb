@@ -38,6 +38,10 @@ do_deploy() {
     install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0004.dtb ${DEPLOYDIR}/devicetree/
     install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0005.dtb ${DEPLOYDIR}/devicetree/
     install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0008.dtb ${DEPLOYDIR}/devicetree/
+
+    # Add GigRouter DTB to deployment directory. The uefi recipe which populates /boot
+    # and extlinux.conf through l4t-launcher-extlinux.bb will search in this location.
+    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0008.dtb ${DEPLOYDIR}/
 }
 
 addtask deploy before do_build after do_install
