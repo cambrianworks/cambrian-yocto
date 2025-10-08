@@ -1,5 +1,7 @@
 header:
   version: 14
+  includes:
+    - ./kas/gigrouter-base-dependencies.yml
 
 distro: tegrademo
 
@@ -58,6 +60,5 @@ local_conf_header:
     # OE4t setup-env.sh style environment, as they modify bblayers.conf
     # and expect additional information on the host.
     INHERIT:remove = "tegra-support-sanity distro_layer_buildinfo"
-    IMAGE_INSTALL:append = " sudo i2c-tools gigrouter-user"
     PACKAGE_CLASSES += "package_deb"
     EXTRA_IMAGE_FEATURES ?= "allow-empty-password empty-root-password allow-root-login package-management"
