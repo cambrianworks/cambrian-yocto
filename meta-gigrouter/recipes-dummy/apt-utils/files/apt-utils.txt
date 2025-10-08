@@ -1,0 +1,1 @@
+apt-utils is a package dependency to something we wish to use without alteration. However, apt-utils isn't actually required to execute those utilities. This package exists to satisfy the dependency without making real changes to the build image.
