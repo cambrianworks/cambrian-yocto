@@ -24,9 +24,9 @@ PASSWORD = "\$6\$sBhZXQYn.XIcQLOn\$CsBLVpDeIlq8iNbF7VGCj5Yqp/P1v3nejonFeh9zPYxvU
 # netdev allows the user to configure NIC devices. i2c allows for
 # using the i2c hardware interface. They're not populated by default
 # so they're create now ahead of adding the user.
-GROUPADD_PARAM:${PN} += "-r netdev; -r i2c"
+GROUPADD_PARAM:${PN} += "-r netdev; -r i2c; -r gpio"
 USERADD_PARAM:${PN} = "--system --create-home \
-                       --groups tty,dialout,i2c,netdev,sudo \
+                       --groups tty,dialout,i2c,netdev,sudo,gpio \
                        --password '${PASSWORD}' \
                        --user-group gigrouter"
 
