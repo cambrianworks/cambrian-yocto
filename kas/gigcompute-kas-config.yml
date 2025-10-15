@@ -3,12 +3,12 @@ header:
   includes:
     - ./kas/gig-base-kas-config.yml
 
-machine: gigrouter
+machine: gigcompute
 
 repos:
-  meta-gigrouter:
+  meta-gigcompute:
     layers:
-      meta-gigrouter:
+      meta-gigcompute:
 
 local_conf_header:
   platform_specific: |
@@ -32,5 +32,5 @@ local_conf_header:
     # at the specified level. At DEBUG the console will print
     # the device boot order.
     EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
-  gigrouter_includes: |
-    IMAGE_INSTALL:append = " gigrouter-user"
+  gigcompute_includes: |
+    IMAGE_INSTALL:append = " gigcompute-user"

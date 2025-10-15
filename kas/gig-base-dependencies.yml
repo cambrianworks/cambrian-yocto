@@ -19,7 +19,6 @@ local_conf_header:
     IMAGE_INSTALL:append = " ethtool"
     IMAGE_INSTALL:append = " fio"
     IMAGE_INSTALL:append = " flex"
-    IMAGE_INSTALL:append = " gigrouter-user"
     IMAGE_INSTALL:append = " gnupg"
     IMAGE_INSTALL:append = " htop"
     IMAGE_INSTALL:append = " i2c-tools"
