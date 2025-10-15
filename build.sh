@@ -8,6 +8,10 @@
 # Initiates a build of the gigrouter image for the specified target. Options
 # are:
 #
+#   gigcompute              - Cambrian Work's official GigComputer hardware
+#                             consisting of Nvidia's AGX Orin SoM on a custom
+#                             carrier PCB.
+#
 #   gigrouter               - Cambrian Work's official GigRouter hardware
 #                             consisting of Nvidia's AGX Orin SoM on a custom
 #                             carrier PCB.
@@ -29,7 +33,9 @@ readonly do_build=y
 # Variables
 readonly KAS_DIRECTORY=kas
 readonly GIGROUTER=gigrouter
+readonly GIGCOMPUTE=gigcompute
 readonly GIGROUTER_NANO_DEVKIT=gigrouter-nano-devkit
+readonly GIGCOMPUTE_KAS_CONFIG=$KAS_DIRECTORY/gigcompute-kas-config.yml
 readonly GIGROUTER_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-kas-config.yml
 readonly GIGROUTER_NANO_DEVKIT_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-nano-devkit-kas-config.yml
 
@@ -68,7 +74,8 @@ usage() {
     ./build.sh <target | clean>
     <target>   -   Hardware platform to target build. Options:
 
-                   gigrouter             - Cambrian Works official product.
+                   gigcompute            - Cambrian Works official GigComute hardare.
+                   gigrouter             - Cambrian Works official GigRouter hardware.
                    gigrouter-nano-devkit - Nvidia reference board.
                    clean                 - Exit venv shell (if running) and delete
                                            build artifacts."
@@ -86,6 +93,8 @@ fi
 configfile=$GIGROUTER_KAS_CONFIG
 if [ "$1" == $GIGROUTER ]; then
     configfile=$GIGROUTER_KAS_CONFIG
+elif [ "$1" == $GIGCOMPUTE ]; then
+    configfile=$GIGCOMPUTE_KAS_CONFIG
 elif [ "$1" == $GIGROUTER_NANO_DEVKIT ]; then
     configfile=$GIGROUTER_NANO_DEVKIT_KAS_CONFIG
 elif [ "$1" == "clean" ]; then

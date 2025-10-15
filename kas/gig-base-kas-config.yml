@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - ./kas/gigrouter-base-dependencies.yml
+    - ./kas/gig-base-dependencies.yml
 
 distro: tegrademo
 
@@ -43,9 +43,9 @@ repos:
     url: https://git.yoctoproject.org/meta-virtualization
     branch: scarthgap
 
-  meta-gigrouter:
+  meta-gig:
     layers:
-      meta-gigrouter:
+      meta-gig:
 
   poky:
     path: repos/poky
