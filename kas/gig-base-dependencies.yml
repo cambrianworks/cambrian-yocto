@@ -25,6 +25,7 @@ local_conf_header:
     IMAGE_INSTALL:append = " iperf3"
     IMAGE_INSTALL:append = " iptables"
     IMAGE_INSTALL:append = " libxml2"
+    IMAGE_INSTALL:append = " mdio-tools"
     IMAGE_INSTALL:append = " microcom"
     IMAGE_INSTALL:append = " nano"
     IMAGE_INSTALL:append = " ncurses-dev"
