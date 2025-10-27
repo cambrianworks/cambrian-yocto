@@ -59,7 +59,7 @@ kas-container build
 
 The output image is found within the `build` directory under: `./build/tmp/deploy/images/gigrouter/demo-image-base-gigrouter.rootfs-[timestamp].tegraflash.tar.gz`
 
-1. Extract to a host machine connected to the target hardware. **N.B.,** Copy DTBs from `meta-tegra/recipes-kernel/gigrouter-devicetree/files` into the directory where the flashing archive was extracted.
+1. Extract to a host machine connected to the target hardware.
 
 2. Power on the target hardware in *Recovery Mode*. When the target is in recovery mode the result of `lsusb` will include:
 

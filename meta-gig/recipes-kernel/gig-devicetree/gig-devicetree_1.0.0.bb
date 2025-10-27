@@ -17,33 +17,28 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Add your DTB files to the SRC_URI
 SRC_URI += " \
-    file://tegra234-gigrouter-p3737-0000+p3701-0000.dtb \
-    file://tegra234-gigrouter-p3737-0000+p3701-0004.dtb \
-    file://tegra234-gigrouter-p3737-0000+p3701-0005.dtb \
-    file://tegra234-gigrouter-p3737-0000+p3701-0008.dtb \
+    file://tegra234-p3701-0008-gr002007.dts \
 "
 
+PLATFORM_DTB_FILE = "tegra234-p3701-0008-gr002007"
+
+do_compile() {
+    dtc -I dts -o dtb -o ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ${WORKDIR}/${PLATFORM_DTB_FILE}.dts
+    if [ ! -e ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ]; then
+        bbfatal "Failed to compile DTB file: ${PLATFORM_DTB_FILE}"
+    fi
+}
+
 do_deploy() {
-    for dtb in ${KERNEL_DEVICETREE}; do
-        dtbf="${STAGING_DIR_HOST}/boot/devicetree/$dtb"
-        if [ ! -f "$dtbf" ]; then
-            bbfatal "Not found: $dtbf"
-        fi
-    done
     install -d ${DEPLOYDIR}/devicetree
     install -m 0644 ${STAGING_DIR_HOST}/boot/devicetree/* ${DEPLOYDIR}/devicetree/
 
     # Adding GigRouter DTBs
-    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0000.dtb ${DEPLOYDIR}/devicetree/
-    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0004.dtb ${DEPLOYDIR}/devicetree/
-    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0005.dtb ${DEPLOYDIR}/devicetree/
-    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0008.dtb ${DEPLOYDIR}/devicetree/
-
-    # Add GigRouter DTB to deployment directory. The uefi recipe which populates /boot
-    # and extlinux.conf through l4t-launcher-extlinux.bb will search in this location.
-    install -m 0644 ${WORKDIR}/tegra234-gigrouter-p3737-0000+p3701-0008.dtb ${DEPLOYDIR}/
+    install -m 0644 ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ${DEPLOYDIR}/
+    install -m 0644 ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ${DEPLOYDIR}/devicetree/
 }
 
-addtask deploy before do_build after do_install
+addtask compile before do_deploy after do_fetch
+addtask deploy before do_build after do_compile
 
 ALLOW_EMPTY:${PN} = "1"
