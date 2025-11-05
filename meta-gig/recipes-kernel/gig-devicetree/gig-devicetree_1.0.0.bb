@@ -23,7 +23,7 @@ SRC_URI += " \
 PLATFORM_DTB_FILE = "tegra234-p3701-0008-gr002007"
 
 do_compile() {
-    dtc -I dts -o dtb -o ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ${WORKDIR}/${PLATFORM_DTB_FILE}.dts
+    dtc -@ -I dts -O dtb -o ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ${WORKDIR}/${PLATFORM_DTB_FILE}.dts
     if [ ! -e ${WORKDIR}/${PLATFORM_DTB_FILE}.dtb ]; then
         bbfatal "Failed to compile DTB file: ${PLATFORM_DTB_FILE}"
     fi
