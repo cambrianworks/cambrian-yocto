@@ -1,0 +1,109 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/tegra234-gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	fragment@0 {
+		target-path = "/bus@0/ethernet@6800000";
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@1 {
+		target-path = "/bus@0/ethernet@2310000";
+		__overlay__ {
+			// By default, this interface is disabled
+			status = "okay";
+
+			// Pins assigned to the RGMII and MDIO interfaces are
+			// already handled and don't need to be further specified.
+			// However, in addition to those pins the PHY chip has a reset
+			// line which the driver needs to be directed to enable. Unlike
+			// the RGMII and MDIO pins, which are dictated by the hardware
+			// blocks of the SOM itself, the reset pin can be any chosen GPIO
+			// and is decided by the hardware routing of the custom carrier.
+			nvidia,phy-reset-gpio = <&gpio TEGRA234_MAIN_GPIO(G, 5) 0>;
+
+			// Change default mode of 10g to rgmii
+			phy-mode = "rgmii-id";
+
+			// Pointer to the device node which details the specific
+			// configuration of the PHY interface
+			phy-handle = <&phy7>;
+
+			// The SOM has several EEPROM slots where it can pull a MAC address
+			// from. Generally, we want to use the MAC address that was programmed
+			// into the first slot at the factory by nvidia.
+			nvidia,mac-addr-idx = <0x00>;
+
+			// Specify a 1G interface
+			fixed-link {
+				speed = <0x3e8>;
+				full-duplex;
+			};
+
+
+			// Detail the configuration of the interface to the
+			// PHY chip.
+			mdio {
+				compatible = "nvidia,eqos-mdio";
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+
+				phy7: ethernet-phy@7 {
+					device_type = "ethernet-phy";
+
+					// MDIO interfaces support multiple devices. They are individually
+					// selected by address and the address for each device is set by
+					// strapping pins on the custom carrier board. In our case all three
+					// address pins are pulled high: 111 == 0x7
+					reg = <0x07>;
+
+					// Timing characteristics of the PHY reset process
+					nvidia,phy-rst-pdelay-msec = <0xe0>;
+					nvidia,phy-rst-duration-usec = <0x2710>;
+
+					// Provides the base address of the GPIO interface. GPIOs are an
+					// an offset from this address. N.b., in older versions of L4T this
+					// was named "tegra_main_gpio".
+					interrupt-parent = <&gpio>;
+
+					// Assign another GPIO for the PHY chip to raise interrupts on activity.
+					interrupts = <TEGRA234_MAIN_GPIO(G, 4) IRQ_TYPE_LEVEL_LOW>;
+					micrel,copper-mode;
+
+					// When the driver loads this field specifies writing to a register
+					// in the PHY. The datasheet doesn't specify exactly what this does
+					// and it may be a fix detailed in errata (speculation is around
+					// signal stability). Since it was provided by the hardware vendor
+					// it should probably be left in.
+					micrel,reg-init = <0x03 0x12 0x7fff 0x880>;
+				};
+			};
+		};
+	};
+
+	fragment@2 {
+		target-path = "/bus@0/pcie@14180000";
+		__overlay__ {
+			status = "okay";
+			phys = <&p2u_hsio_0>;
+			phy-names = "p2u-0";
+		};
+	};
+
+	fragment@3 {
+		target-path = "/bus@0/pcie@141e0000";
+		__overlay__ {
+			status = "okay";
+			num-lanes = <8>;
+			phys = <&p2u_gbe_0>, <&p2u_gbe_1>, <&p2u_gbe_2>, <&p2u_gbe_3>, 
+			       <&p2u_gbe_4>, <&p2u_gbe_5>, <&p2u_gbe_6>, <&p2u_gbe_7>;
+			phy-names = "p2u-0", "p2u-1", "p2u-2", "p2u-3", 
+				    "p2u-4", "p2u-5", "p2u-6", "p2u-7";
+		};
+	};
+};
