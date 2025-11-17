@@ -1,0 +1,13 @@
+SSTATE_SKIP_CREATION = "1"
+
+# Use the ?= conditional assignment operator here
+# so that CI can override with environment variables
+CW_BUILD_RELEASE ?= "2"
+CW_BUILD_MAJOR ?= "0"
+CW_BUILD_MINOR ?= "0"
+CW_BUILD_PRETTY = "Cambrian Works BSP $CW_BUILD_RELEASE.$CW_BUILD_MAJOR.$CW_BUILD_MINOR"
+
+OS_RELEASE_FIELDS += "CW_BUILD_RELEASE"
+OS_RELEASE_FIELDS += "CW_BUILD_MAJOR"
+OS_RELEASE_FIELDS += "CW_BUILD_MINOR"
+OS_RELEASE_FIELDS += "CW_BUILD_PRETTY"
