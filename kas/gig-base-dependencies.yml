@@ -33,6 +33,7 @@ local_conf_header:
     IMAGE_INSTALL:append = " nfs-utils"
     IMAGE_INSTALL:append = " networkmanager"
     IMAGE_INSTALL:append = " networkmanager-nmcli"
+    IMAGE_INSTALL:append = " os-release"
     IMAGE_INSTALL:append = " jq"
     IMAGE_INSTALL:append = " logrotate"
     IMAGE_INSTALL:append = " openssl-dev"
