@@ -7,3 +7,6 @@ build/
 # Ignore working directories
 venv/
 repos/
+
+# Ignore session history
+.kas_shell_history
