@@ -3,7 +3,7 @@ header:
   includes:
     - ./kas/gig-base-dependencies.yml
 
-distro: tegrademo
+distro: cambrianyocto
 
 target:
   - demo-image-base
