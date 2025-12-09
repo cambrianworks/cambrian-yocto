@@ -8,7 +8,7 @@ Before you start contributing, please take a moment to read the following:
 
 * **Contributor Assignment Agreement:** Please review our [Cambrian Works - Contributor Assignment Agreement](<./Cambrian Works - Contributor Assignment Agreement.md>). By contributing, you agree that your submissions will be subject to the conditions of the agreement.
 
-* **License:** Our project is licensed under **Apache 2.0**. By contributing, you agree that your submissions will be licensed under the same terms.
+* **License:** Our project is licensed under **[Apache 2.0](./LICENSE.md)** ([https://www.apache.org](https://www.apache.org/licenses/LICENSE-2.0)). By contributing, you agree that your submissions will be licensed under the same terms.
 
 ## How to Contribute
 
@@ -35,7 +35,7 @@ For significant changes, new features, or major refactoring please contact a rep
 
 ### 3. Create a Branch
 
-Create a new, descriptive branch for your contribution. Use a clear naming convention (e.g., `feature/add-pakage-XXX`).
+Create a new, descriptive branch for your contribution. Use a clear naming convention (e.g., `feature/add-package-XXX`).
 
 ```bash
 git checkout -b your-branch-name
