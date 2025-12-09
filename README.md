@@ -90,7 +90,7 @@ sudo ./doflash.sh
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTNG.md) document.
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) document.
 
 ---
 
