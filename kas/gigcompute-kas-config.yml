@@ -31,6 +31,6 @@ local_conf_header:
     # EDK2_BUILD_MODE directs the bootloader to print logging
     # at the specified level. At DEBUG the console will print
     # the device boot order.
-    EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
+    EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "RELEASE"
   gigcompute_includes: |
     IMAGE_INSTALL:append = " gigcompute-user"
