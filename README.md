@@ -29,7 +29,7 @@ Executing the `build.sh` script will automatically checkout the artifacts requir
 
 Replacing the `gigrouter` argument with `clean` will delete all checked out repositories and build artifacts.
 
-### Manual procedure
+### Manual procedures
 
 Alternatively, a build can be produced manually with the following steps:
 
@@ -85,6 +85,12 @@ Bus 003 Device 022: ID 0955:7523 NVIDIA Corp. APX
 ```
 sudo ./doflash.sh
 ```
+
+---
+
+## Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTNG.md) document.
 
 ---
 
