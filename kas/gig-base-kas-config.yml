@@ -1,12 +1,10 @@
 header:
   version: 14
-  includes:
-    - ./kas/gig-base-dependencies.yml
 
-distro: cambrianyocto
+distro: cambriandistro
 
 target:
-  - demo-image-base
+  - cambrian-image
 
 repos:
   tegra-demo-distro:
