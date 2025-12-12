@@ -29,7 +29,7 @@ Executing the `build.sh` script will automatically checkout the artifacts requir
 
 Replacing the `gigrouter` argument with `clean` will delete all checked out repositories and build artifacts.
 
-### Manual procedure
+### Manual procedures
 
 Alternatively, a build can be produced manually with the following steps:
 
@@ -53,11 +53,24 @@ kas checkout
 kas-container build
 ```
 
+4. Opening a shell (for example, using bitbake to build a specific package).
+
+```
+kas-container shell kas/gigrouter-kas-config.yml
+bitbake -c build tegra-binaries
+```
+
+5. Using shell commands as argument.
+
+```
+kas-container shell kas/gigrouter-kas-config.yml -c "bitbake -c cleansstate tegra-binaries"
+```
+
 ---
 
 ## Flashing
 
-The output image is found within the `build` directory under: `./build/tmp/deploy/images/gigrouter/demo-image-base-gigrouter.rootfs-[timestamp].tegraflash.tar.gz`
+The output image is found within the `build` directory under: `./build/tmp/deploy/images/gigrouter/cambrian-image-gigrouter.rootfs-[timestamp].tegraflash.tar.gz`
 
 1. Extract to a host machine connected to the target hardware.
 
@@ -72,6 +85,12 @@ Bus 003 Device 022: ID 0955:7523 NVIDIA Corp. APX
 ```
 sudo ./doflash.sh
 ```
+
+---
+
+## Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) document.
 
 ---
 
