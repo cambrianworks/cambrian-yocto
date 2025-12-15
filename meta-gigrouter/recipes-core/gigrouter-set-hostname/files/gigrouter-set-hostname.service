@@ -4,10 +4,12 @@ Before=network-pre.target
 Wants=network-pre.target
 RequiresMountsFor=/etc
 
+# Only execute once on first boot
+ConditionPathExists=!/etc/gigrouter_hostname_set
+
 [Service]
 Type=oneshot
 ExecStart=/usr/sbin/gigrouter-set-hostname.sh
-RemainAfterExit=yes
 
 [Install]
 WantedBy=sysinit.target
