@@ -120,6 +120,8 @@ IMAGE_INSTALL:append = " libnvidia-container"
 IMAGE_INSTALL:append = " libnvjitlink"
 IMAGE_INSTALL:append = " libnvjpeg"
 IMAGE_INSTALL:append = " tegra-cuda-utils"
+IMAGE_INSTALL:append = " tegra-nvpmodel"
+IMAGE_INSTALL:append = " tegra-nvpmodel-base"
 IMAGE_INSTALL:append = " tegra-tools"
 
 # Dummy packages
@@ -128,3 +130,4 @@ IMAGE_INSTALL:append = " apt-utils"
 IMAGE_INSTALL:append = " build-essential"
 IMAGE_INSTALL:append = " cuda-toolkit-11-4"
 IMAGE_INSTALL:append = " nvidia-l4t-init"
+IMAGE_INSTALL:append = " nvidia-l4t-nvpmodel"

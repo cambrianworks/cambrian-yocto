@@ -34,9 +34,11 @@ readonly do_build=y
 readonly KAS_DIRECTORY=kas
 readonly GIGROUTER=gigrouter
 readonly GIGCOMPUTE=gigcompute
+readonly GIGCOMPUTE_NANO_DEVKIT=gigcompute-nano-devkit
 readonly GIGROUTER_NANO_DEVKIT=gigrouter-nano-devkit
 readonly GIGCOMPUTE_KAS_CONFIG=$KAS_DIRECTORY/gigcompute-kas-config.yml
 readonly GIGROUTER_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-kas-config.yml
+readonly GIGCOMPUTE_NANO_DEVKIT_KAS_CONFIG=$KAS_DIRECTORY/gigcompute-nano-devkit-kas-config.yml
 readonly GIGROUTER_NANO_DEVKIT_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-nano-devkit-kas-config.yml
 
 msg() {
@@ -74,11 +76,12 @@ usage() {
     ./build.sh <target | clean>
     <target>   -   Hardware platform to target build. Options:
 
-                   gigcompute            - Cambrian Works official GigComute hardare.
-                   gigrouter             - Cambrian Works official GigRouter hardware.
-                   gigrouter-nano-devkit - Nvidia reference board.
-                   clean                 - Exit venv shell (if running) and delete
-                                           build artifacts."
+                   gigcompute             - Cambrian Works official GigComute hardare.
+                   gigrouter              - Cambrian Works official GigRouter hardware.
+                   gigrouter-nano-devkit  - Nvidia reference board.
+                   gigcompute-nano-devkit - Nvidia reference board.
+                   clean                  - Exit venv shell (if running) and delete
+                                            build artifacts."
 }
 
 ###############################################################################
@@ -95,6 +98,8 @@ if [ "$1" == $GIGROUTER ]; then
     configfile=$GIGROUTER_KAS_CONFIG
 elif [ "$1" == $GIGCOMPUTE ]; then
     configfile=$GIGCOMPUTE_KAS_CONFIG
+elif [ "$1" == $GIGCOMPUTE_NANO_DEVKIT ]; then
+    configfile=$GIGCOMPUTE_NANO_DEVKIT_KAS_CONFIG
 elif [ "$1" == $GIGROUTER_NANO_DEVKIT ]; then
     configfile=$GIGROUTER_NANO_DEVKIT_KAS_CONFIG
 elif [ "$1" == "clean" ]; then
