@@ -17,4 +17,5 @@ local_conf_header:
     # the device boot order.
     EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
   gigrouter_includes: |
+    IMAGE_INSTALL:append = " gigcompute-set-hostname"
     IMAGE_INSTALL:append = " gigcompute-user"
