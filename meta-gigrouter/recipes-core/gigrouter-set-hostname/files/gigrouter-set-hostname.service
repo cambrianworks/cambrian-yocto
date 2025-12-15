@@ -1,0 +1,13 @@
+[Unit]
+Description=Set Hostname derived from SOMs serial number
+Before=network-pre.target
+Wants=network-pre.target
+RequiresMountsFor=/etc
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/gigrouter-set-hostname.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
