@@ -1,0 +1,21 @@
+header:
+  version: 14
+  includes:
+    - ./kas/gig-base-kas-config.yml
+
+machine: gigcompute-nano-devkit
+
+repos:
+  meta-gigcompute:
+    layers:
+      meta-gigcompute:
+
+local_conf_header:
+  platform_specific: |
+    # EDK2_BUILD_MODE directs the bootloader to print logging
+    # at the specified level. At DEBUG the console will print
+    # the device boot order.
+    EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
+  gigrouter_includes: |
+    IMAGE_INSTALL:append = " gigcompute-set-hostname"
+    IMAGE_INSTALL:append = " gigcompute-user"

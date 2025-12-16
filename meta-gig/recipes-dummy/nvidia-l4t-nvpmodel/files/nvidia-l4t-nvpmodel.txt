@@ -1,0 +1,1 @@
+nvidia-l4t-nvpmodel provides power profiling utilities in the Ubuntu SDK. It has been specified as a dependency of other utilities. However, in an image built by Yocto it's expected that those configurations were already supplied at build time, rather than initial runtime. This dummy package satisfies those dependencies to maintain compatibility.
