@@ -33,4 +33,5 @@ local_conf_header:
     # the device boot order.
     EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "RELEASE"
   gigrouter_includes: |
+    IMAGE_INSTALL:append = " gigrouter-set-hostname"
     IMAGE_INSTALL:append = " gigrouter-user"
