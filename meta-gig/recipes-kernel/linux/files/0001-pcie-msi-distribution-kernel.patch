@@ -1,0 +1,520 @@
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -190,6 +190,8 @@ void iommu_dma_get_resv_regions(struct device *dev, struct list_head *list)
+ 
+ 	if (!is_of_node(dev_iommu_fwspec_get(dev)->iommu_fwnode))
+ 		iort_iommu_msi_get_resv_regions(dev, list);
++	else
++		of_iommu_msi_get_resv_regions(dev, list);
+ 
+ 	if (dev->of_node)
+ 		of_iommu_get_resv_regions(dev, list);
+@@ -1434,4 +1436,59 @@ static int iommu_dma_init(void)
+ 
+ 	return iova_cache_get();
+ }
++
++#ifdef CONFIG_ARCH_TEGRA
++/* Tegra hardware translates PCIe MSI write transactions to a new address
++ * range.  The lower 10-bits of the data (the irq) select a 64KiB page.
++ * The implementation assumes the corresponding IOVA address range has been
++ * reserved in iova_reserve_iommu_regions
++ */
++void iommu_dma_map_msi_pages(struct device *dev, phys_addr_t msi_base, int irq,
++		unsigned int nr_irqs)
++{
++	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
++	struct iova_domain *iovad;
++	size_t size, iova_off;
++	int prot = IOMMU_WRITE | IOMMU_NOEXEC | IOMMU_MMIO;
++	phys_addr_t msi_phys;
++
++	if (!domain || !domain->iova_cookie)
++		return;
++
++	iovad = &domain->iova_cookie->iovad;
++
++	msi_phys = msi_base + (irq * SZ_64K);
++	size = nr_irqs * SZ_64K;
++
++	iova_off = iova_offset(iovad, msi_phys);
++	msi_phys -= iova_off;
++	size = iova_align(iovad, size + iova_off);
++
++	iommu_map(domain, msi_phys, msi_phys, size, prot);
++}
++
++void iommu_dma_unmap_msi_pages(struct device *dev, phys_addr_t msi_base,
++		int irq, unsigned int nr_irqs)
++{
++	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
++	struct iova_domain *iovad;
++	size_t size, iova_off;
++	phys_addr_t msi_phys;
++
++	if (!domain || !domain->iova_cookie)
++		return;
++
++	iovad = &domain->iova_cookie->iovad;
++
++	msi_phys = msi_base + (irq * SZ_64K);
++	size = nr_irqs * SZ_64K;
++
++	iova_off = iova_offset(iovad, msi_phys);
++	msi_phys -= iova_off;
++	size = iova_align(iovad, size + iova_off);
++
++	iommu_unmap(domain, msi_phys, size);
++}
++#endif
++
+ arch_initcall(iommu_dma_init);
+diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
+index 7ad4d27875b1..0ac5a5ca4150 100644
+--- a/drivers/iommu/of_iommu.c
++++ b/drivers/iommu/of_iommu.c
+@@ -20,6 +20,84 @@
+ 
+ #define NO_IOMMU	1
+ 
++static int of_iommu_alloc_resv_msi_region(struct device_node *np,
++		struct list_head *head)
++{
++	int prot = IOMMU_WRITE | IOMMU_NOEXEC | IOMMU_MMIO;
++	struct iommu_resv_region *region;
++	struct resource res;
++	int i = 0;
++
++	while (of_address_to_resource(np, i++, &res) == 0) {
++		if (strcmp(res.name, "msi_base"))
++			continue;
++		region = iommu_alloc_resv_region(res.start, resource_size(&res),
++				prot, IOMMU_RESV_MSI);
++		if (!region)
++			return -ENOMEM;
++
++		list_add_tail(&region->list, head);
++	}
++
++	return 0;
++}
++
++static int __get_pci_rid(struct pci_dev *pdev, u16 alias, void *data)
++{
++	u32 *rid = data;
++
++	*rid = alias;
++	return 0;
++}
++
++static int of_pci_msi_get_resv_regions(struct device *dev,
++		struct list_head *head)
++{
++	struct device_node *msi_np;
++	struct device *pdev;
++	u32 rid;
++	int err, resv = 0;
++
++	pci_for_each_dma_alias(to_pci_dev(dev), __get_pci_rid, &rid);
++
++	for_each_node_with_property(msi_np, "msi-controller") {
++		for (pdev = dev; pdev; pdev = pdev->parent) {
++			if (!pdev->of_node)
++				continue;
++
++			if (!of_map_id(pdev->of_node, rid, "msi-map",
++					"msi-map-mask", &msi_np, NULL)) {
++				err = of_iommu_alloc_resv_msi_region(msi_np,
++									head);
++				if (err)
++					return err;
++				resv++;
++			}
++		}
++	}
++
++	return resv;
++}
++
++static int of_platform_msi_get_resv_regions(struct device *dev,
++		struct list_head *head)
++{
++	struct of_phandle_args args;
++	int err, resv = 0;
++
++	while (!of_parse_phandle_with_args(dev->of_node, "msi-parent",
++				"#msi-cells", resv, &args)) {
++		err = of_iommu_alloc_resv_msi_region(args.np, head);
++		of_node_put(args.np);
++		if (err)
++			return err;
++
++		resv++;
++	}
++
++	return resv;
++}
++
+ static int of_iommu_xlate(struct device *dev,
+ 			  struct of_phandle_args *iommu_spec)
+ {
+@@ -174,6 +252,25 @@ const struct iommu_ops *of_iommu_configure(struct device *dev,
+ 	return ops;
+ }
+ 
++/*
++ * of_iommu_msi_get_resv_regions - Reserved region driver helper
++ * @dev: Device from iommu_get_resv_regions()
++ * @head: Reserved region list from iommu_get_resv_regions()
++ *
++ * Returns: Number of reserved regions on success (0 if no associated
++ * msi parent), appropriate error value otherwise.
++ */
++int of_iommu_msi_get_resv_regions(struct device *dev, struct list_head *head)
++{
++
++	if (dev_is_pci(dev))
++		return of_pci_msi_get_resv_regions(dev, head);
++	else if (dev->of_node)
++		return of_platform_msi_get_resv_regions(dev, head);
++
++	return 0;
++}
++
+ static enum iommu_resv_type iommu_resv_region_get_type(struct device *dev, struct resource *phys,
+ 						       phys_addr_t start, size_t length)
+ {
+--- a/drivers/irqchip/irq-gic-v2m.c
++++ b/drivers/irqchip/irq-gic-v2m.c
+@@ -63,6 +63,7 @@ struct v2m_data {
+ 	struct list_head entry;
+ 	struct fwnode_handle *fwnode;
+ 	struct resource res;	/* GICv2m resource */
++	struct resource msi;	/* MSI region (Tegra specific) */
+ 	void __iomem *base;	/* GICv2m virt address */
+ 	u32 spi_start;		/* The SPI number that MSIs start */
+ 	u32 nr_spis;		/* The number of SPIs for MSIs */
+@@ -120,7 +121,9 @@ static void gicv2m_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
+ 	if (v2m->flags & GICV2M_NEEDS_SPI_OFFSET)
+ 		msg->data -= v2m->spi_offset;
+ 
+-	iommu_dma_compose_msi_msg(irq_data_get_msi_desc(data), msg);
++	/* On Tegra, the translated MSI address is mapped instead */
++	if (!v2m->msi.start)
++		iommu_dma_compose_msi_msg(irq_data_get_msi_desc(data), msg);
+ }
+ 
+ static struct irq_chip gicv2m_irq_chip = {
+@@ -179,6 +182,7 @@ static int gicv2m_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
+ {
+ 	msi_alloc_info_t *info = args;
+ 	struct v2m_data *v2m = NULL, *tmp;
++	struct device *dev =  msi_desc_to_dev(info->desc);
+ 	int hwirq, offset, i, err = 0;
+ 
+ 	spin_lock(&v2m_lock);
+@@ -210,7 +214,13 @@ static int gicv2m_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
+ 		irq_domain_set_hwirq_and_chip(domain, virq + i, hwirq + i,
+ 					      &gicv2m_irq_chip, v2m);
+ 	}
+-
++#ifdef CONFIG_ARCH_TEGRA
++	/* Tegra hardware translates the GICA_SETSPI_NSR address to a separate
++	 * address range with a 64KiB page per SPI
++	 */
++	if (v2m->msi.start)
++		iommu_dma_map_msi_pages(dev, v2m->msi.start, hwirq, nr_irqs);
++#endif
+ 	return 0;
+ 
+ fail:
+@@ -224,9 +234,14 @@ static void gicv2m_irq_domain_free(struct irq_domain *domain,
+ {
+ 	struct irq_data *d = irq_domain_get_irq_data(domain, virq);
+ 	struct v2m_data *v2m = irq_data_get_irq_chip_data(d);
++	struct device *dev = msi_desc_to_dev(irq_get_msi_desc(d->irq));
+ 
+ 	gicv2m_unalloc_msi(v2m, d->hwirq, nr_irqs);
+ 	irq_domain_free_irqs_parent(domain, virq, nr_irqs);
++#ifdef CONFIG_ARCH_TEGRA
++	if (v2m->msi.start)
++		iommu_dma_unmap_msi_pages(dev, v2m->msi.start, d->hwirq, nr_irqs);
++#endif
+ }
+ 
+ static const struct irq_domain_ops gicv2m_domain_ops = {
+@@ -317,7 +332,7 @@ static int gicv2m_allocate_domains(struct irq_domain *parent)
+ 
+ static int __init gicv2m_init_one(struct fwnode_handle *fwnode,
+ 				  u32 spi_start, u32 nr_spis,
+-				  struct resource *res, u32 flags)
++				  struct resource *res, struct resource *msi, u32 flags)
+ {
+ 	int ret;
+ 	struct v2m_data *v2m;
+@@ -338,7 +353,12 @@ static int __init gicv2m_init_one(struct fwnode_handle *fwnode,
+ 		ret = -ENOMEM;
+ 		goto err_free_v2m;
+ 	}
+-
++#ifdef CONFIG_ARCH_TEGRA
++	if (msi && msi->start) {
++		memcpy(&v2m->msi, msi, sizeof(struct resource));
++		pr_info("Tegra MSI region %pR\n", msi);
++	}
++#endif
+ 	if (spi_start && nr_spis) {
+ 		v2m->spi_start = spi_start;
+ 		v2m->nr_spis = nr_spis;
+@@ -420,7 +440,7 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
+ 	for (child = of_find_matching_node(node, gicv2m_device_id); child;
+ 	     child = of_find_matching_node(child, gicv2m_device_id)) {
+ 		u32 spi_start = 0, nr_spis = 0;
+-		struct resource res;
++		struct resource res, msi;
+ 
+ 		if (!of_find_property(child, "msi-controller", NULL))
+ 			continue;
+@@ -431,6 +451,10 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
+ 			break;
+ 		}
+ 
++		ret = of_address_to_resource(child, 1, &msi);
++		if (ret)
++			memset(&msi, 0, sizeof(struct resource));
++
+ 		if (!of_property_read_u32(child, "arm,msi-base-spi",
+ 					  &spi_start) &&
+ 		    !of_property_read_u32(child, "arm,msi-num-spis", &nr_spis))
+@@ -438,7 +462,7 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
+ 				spi_start, nr_spis);
+ 
+ 		ret = gicv2m_init_one(&child->fwnode, spi_start, nr_spis,
+-				      &res, 0);
++				      &res, &msi, 0);
+ 		if (ret) {
+ 			of_node_put(child);
+ 			break;
+@@ -529,7 +553,7 @@ acpi_parse_madt_msi(union acpi_subtable_headers *header,
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = gicv2m_init_one(fwnode, spi_start, nr_spis, &res, flags);
++	ret = gicv2m_init_one(fwnode, spi_start, nr_spis, &res, NULL, flags);
+ 	if (ret)
+ 		irq_domain_free_fwnode(fwnode);
+ 
+--- a/drivers/pci/controller/dwc/pcie-tegra194.c
++++ b/drivers/pci/controller/dwc/pcie-tegra194.c
+@@ -20,6 +20,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+ #include <linux/of_irq.h>
+@@ -241,6 +242,13 @@
+ #define APPL_INTR_STATUS_L1_20_IF_TIMEOUT	BIT(1)
+ #define APPL_INTR_STATUS_L1_20_SAFETY_UNCORR	BIT(0)
+ 
++#define APPL_SEC_EXTERNAL_MSI_ADDR_H	0x10100
++#define APPL_SEC_EXTERNAL_MSI_ADDR_L	0x10104
++#define APPL_SEC_INTERNAL_MSI_ADDR_H	0x10108
++#define APPL_SEC_INTERNAL_MSI_ADDR_L	0x1010c
++
++#define V2M_MSI_SETSPI_NS		0x040
++
+ #define IO_BASE_IO_DECODE				BIT(0)
+ #define IO_BASE_IO_DECODE_BIT8				BIT(8)
+ 
+@@ -374,6 +382,8 @@ struct tegra_pcie_dw {
+ 	struct resource *appl_res;
+ 	struct resource *dbi_res;
+ 	struct resource *atu_dma_res;
++	struct resource gic_base;
++	struct resource msi_base;
+ 	void __iomem *appl_base;
+ 	struct clk *core_clk;
+ 	struct clk *core_clk_m;
+@@ -391,6 +401,7 @@ struct tegra_pcie_dw {
+ 	bool link_status_change;
+ 	bool link_speed_change;
+ 	bool update_fc_fixup;
++	bool gic_v2m;
+ 	bool enable_ext_refclk;
+ 	bool is_safety_platform;
+ 
+@@ -1576,6 +1587,24 @@ static void tegra_pcie_dw_stop_link(struct dw_pcie *pci)
+ 		gpiod_set_value_cansleep(pcie->pex_prsnt_gpiod, 0);
+ }
+ 
++static int tegra_pcie_msi_host_init(struct pcie_port *pp)
++{
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++	struct tegra_pcie_dw *pcie = to_tegra_pcie(pci);
++
++	writel(lower_32_bits(pcie->gic_base.start + V2M_MSI_SETSPI_NS),
++		   pcie->appl_base + APPL_SEC_EXTERNAL_MSI_ADDR_L);
++	writel(upper_32_bits(pcie->gic_base.start + V2M_MSI_SETSPI_NS),
++		   pcie->appl_base + APPL_SEC_EXTERNAL_MSI_ADDR_H);
++
++	writel(lower_32_bits(pcie->msi_base.start),
++		   pcie->appl_base + APPL_SEC_INTERNAL_MSI_ADDR_L);
++	writel(upper_32_bits(pcie->msi_base.start),
++		   pcie->appl_base + APPL_SEC_INTERNAL_MSI_ADDR_H);
++
++	return 0;
++}
++
+ static const struct dw_pcie_ops tegra_dw_pcie_ops = {
+ 	.link_up = tegra_pcie_dw_link_up,
+ 	.start_link = tegra_pcie_dw_start_link,
+@@ -1586,6 +1615,11 @@ static const struct dw_pcie_host_ops tegra_pcie_dw_host_ops = {
+ 	.host_init = tegra_pcie_dw_host_init,
+ };
+ 
++static const struct dw_pcie_host_ops tegra_pcie_dw_host_ops_msi = {
++	.host_init = tegra_pcie_dw_host_init,
++	.msi_host_init = tegra_pcie_msi_host_init,
++};
++
+ static void tegra_pcie_disable_phy(struct tegra_pcie_dw *pcie)
+ {
+ 	unsigned int phy_count = pcie->phy_count;
+@@ -1750,6 +1784,43 @@ static int tegra_pcie_dw_parse_dt(struct tegra_pcie_dw *pcie)
+ 	return 0;
+ }
+ 
++/*
++ * Parse msi-parent and gic-v2m resources. On failure don't return error
++ * and use default DWC MSI framework.
++ */
++void tegra_pcie_parse_msi_parent(struct tegra_pcie_dw *pcie)
++{
++	struct device_node *np = pcie->dev->of_node;
++	struct device_node *msi_node;
++	int ret;
++
++	msi_node = of_parse_phandle(np, "msi-parent", 0);
++	if (!msi_node) {
++		dev_dbg(pcie->dev, "Failed to find msi-parent\n");
++		return;
++	}
++
++	if (!of_device_is_compatible(msi_node, "arm,gic-v2m-frame")) {
++		dev_err(pcie->dev, "msi-parent is not gic-v2m\n");
++		return;
++	}
++
++	ret = of_address_to_resource(msi_node, 0, &pcie->gic_base);
++	if (ret) {
++		dev_err(pcie->dev, "Failed to allocate gic_base resource\n");
++		return;
++	}
++
++	ret = of_address_to_resource(msi_node, 1, &pcie->msi_base);
++	if (ret) {
++		dev_err(pcie->dev, "Failed to allocate msi_base resource\n");
++		return;
++	}
++
++	dev_info(pcie->dev, "Using GICv2m MSI allocator\n");
++	pcie->gic_v2m = true;
++}
++
+ static int tegra_pcie_bpmp_set_ctrl_state(struct tegra_pcie_dw *pcie,
+ 					  bool enable)
+ {
+@@ -2058,7 +2129,10 @@ static int tegra_pcie_init_controller(struct tegra_pcie_dw *pcie)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	pp->ops = &tegra_pcie_dw_host_ops;
++	if (pcie->gic_v2m)
++		pp->ops = &tegra_pcie_dw_host_ops_msi;
++	else
++		pp->ops = &tegra_pcie_dw_host_ops;
+ 
+ 	ret = dw_pcie_host_init(pp);
+ 	if (ret < 0) {
+@@ -2760,6 +2834,8 @@ static int tegra_pcie_dw_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	tegra_pcie_parse_msi_parent(pcie);
++
+ 	ret = tegra_pcie_get_slot_regulators(pcie);
+ 	if (ret < 0) {
+ 		const char *level = KERN_ERR;
+@@ -3082,6 +3158,9 @@ static int tegra_pcie_dw_resume_noirq(struct device *dev)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	if (pcie->gic_v2m)
++        tegra_pcie_msi_host_init(&pcie->pci.pp);
++
+ 	ret = tegra_pcie_dw_host_init(&pcie->pci.pp);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Failed to init host: %d\n", ret);
+--- a/include/linux/dma-iommu.h
++++ b/include/linux/dma-iommu.h
+@@ -35,9 +35,13 @@ int iommu_dma_prepare_msi(struct msi_desc *desc, phys_addr_t msi_addr);
+ /* Update the MSI message if required. */
+ void iommu_dma_compose_msi_msg(struct msi_desc *desc,
+ 			       struct msi_msg *msg);
+-
++#ifdef CONFIG_ARCH_TEGRA
++void iommu_dma_map_msi_pages(struct device *dev, phys_addr_t msi_base,
++		int irq, unsigned int nr_irqs);
++void iommu_dma_unmap_msi_pages(struct device *dev, phys_addr_t msi_base,
++		int irq, unsigned int nr_irqs);
+ void iommu_dma_get_resv_regions(struct device *dev, struct list_head *list);
+-
++#endif
+ void iommu_dma_free_cpu_cached_iovas(unsigned int cpu,
+ 		struct iommu_domain *domain);
+ 
+@@ -85,6 +89,18 @@ static inline void iommu_dma_compose_msi_msg(struct msi_desc *desc,
+ {
+ }
+ 
++#ifdef CONFIG_ARCH_TEGRA
++static inline void iommu_dma_map_msi_pages(struct device *dev, phys_addr_t msi_base,
++		int irq, unsigned int nr_irqs)
++{
++}
++
++static inline void iommu_dma_unmap_msi_pages(struct device *dev, phys_addr_t msi_base,
++		int irq, unsigned int nr_irqs)
++{
++}
++#endif
++
+ static inline void iommu_dma_get_resv_regions(struct device *dev, struct list_head *list)
+ {
+ }
+--- a/include/linux/of_iommu.h
++++ b/include/linux/of_iommu.h
+@@ -12,6 +12,9 @@ extern const struct iommu_ops *of_iommu_configure(struct device *dev,
+ 					struct device_node *master_np,
+ 					const u32 *id);
+ 
++extern int of_iommu_msi_get_resv_regions(struct device *dev,
++		struct list_head *head);
++
+ extern void of_iommu_get_resv_regions(struct device *dev,
+ 				      struct list_head *list);
+ 
+@@ -24,6 +27,11 @@ static inline const struct iommu_ops *of_iommu_configure(struct device *dev,
+ 	return NULL;
+ }
+ 
++static inline int of_iommu_msi_get_resv_regions(struct device *dev, struct list_head *head)
++{
++	return NULL;
++}
++
+ static inline void of_iommu_get_resv_regions(struct device *dev,
+ 					     struct list_head *list)
+ {
