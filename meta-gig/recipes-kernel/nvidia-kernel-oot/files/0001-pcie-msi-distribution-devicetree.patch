@@ -1,0 +1,132 @@
+--- a/hardware/nvidia/t23x/nv-public/include/kernel/dt-bindings/interrupt-controller/arm-gic.h
++++ b/hardware/nvidia/t23x/nv-public/include/kernel/dt-bindings/interrupt-controller/arm-gic.h
+@@ -20,4 +20,8 @@
+ #define GIC_CPU_MASK_RAW(x) ((x) << 8)
+ #define GIC_CPU_MASK_SIMPLE(num) GIC_CPU_MASK_RAW((1 << (num)) - 1)
+ 
++/* SPIs which are available for PCIe MSI interrupts */
++#define GIC_SPI_MSI_BASE		608
++#define GIC_SPI_MSI_SIZE		352
++
+ #endif
+
+--- a/hardware/nvidia/t23x/nv-public/tegra234.dtsi
++++ b/hardware/nvidia/t23x/nv-public/tegra234.dtsi
+@@ -1936,6 +1936,18 @@
+ 			#redistributor-regions = <1>;
+ 			#interrupt-cells = <3>;
+ 			interrupt-controller;
++			ranges;
++
++			gic_v2m: v2m@f410000 {
++				compatible = "arm,gic-v2m-frame";
++				msi-controller;
++				#msi-cells = <1>;
++				reg = <0x0 0x0f410000 0x0 0x00010000	/* GICA */
++				       0x0 0x54000000 0x0 0x04000000>;
++				reg-names = "gic_base", "msi_base";
++				arm,msi-base-spi = <GIC_SPI_MSI_BASE>;
++				arm,msi-num-spis = <GIC_SPI_MSI_SIZE>;
++			};
+ 		};
+ 
+ 		smmu_iso: iommu@10000000 {
+@@ -2377,6 +2389,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE8 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE8>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE8 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2431,6 +2445,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso0 TEGRA234_SID_PCIE9 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE9>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE9 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2485,6 +2501,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE10 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE10>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE10 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2577,6 +2595,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE1 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE1>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE1 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2631,6 +2651,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE2 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE2>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE2 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2685,6 +2707,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE3 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE3>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE3 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2739,6 +2763,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso0 TEGRA234_SID_PCIE4 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE4>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE4 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2793,6 +2819,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso0 TEGRA234_SID_PCIE0 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE0>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE0 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2847,6 +2875,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso0 TEGRA234_SID_PCIE5 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE5>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE5 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -2939,6 +2969,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso0 TEGRA234_SID_PCIE6 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE6>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE6 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
+@@ -3031,6 +3063,8 @@
+ 			interconnect-names = "dma-mem", "write";
+ 			iommu-map = <0x0 &smmu_niso1 TEGRA234_SID_PCIE7 0x1000>;
+ 			iommu-map-mask = <0x0>;
++			msi-parent = <&gic_v2m TEGRA234_SID_PCIE7>;
++			msi-map = <0x0 &gic_v2m TEGRA234_SID_PCIE7 0x1000>;
+ 			dma-coherent;
+ 
+ 			status = "disabled";
