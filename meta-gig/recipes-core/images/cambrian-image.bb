@@ -5,7 +5,11 @@ DESCRIPTION = "${SUMMARY}"
 
 DISTRO = "cambrian-distro"
 
+# Cambrian Works packages
+IMAGE_INSTALL:append = " cw-drive-setup"
+
 # Base image appends
+IMAGE_INSTALL:append = " android-tools-fstools"
 IMAGE_INSTALL:append = " apt"
 IMAGE_INSTALL:append = " autoconf"
 IMAGE_INSTALL:append = " bash"
@@ -16,10 +20,12 @@ IMAGE_INSTALL:append = " ca-certificates"
 IMAGE_INSTALL:append = " curl"
 IMAGE_INSTALL:append = " coreutils"
 IMAGE_INSTALL:append = " devmem2"
+IMAGE_INSTALL:append = " dosfstools"
 IMAGE_INSTALL:append = " dtc"
 IMAGE_INSTALL:append = " e2fsprogs"
 IMAGE_INSTALL:append = " e2fsprogs-badblocks"
 IMAGE_INSTALL:append = " e2fsprogs-mke2fs"
+IMAGE_INSTALL:append = " e2fsprogs-resize2fs"
 IMAGE_INSTALL:append = " e2fsprogs-tune2fs"
 IMAGE_INSTALL:append = " efibootmgr"
 IMAGE_INSTALL:append = " ethtool"

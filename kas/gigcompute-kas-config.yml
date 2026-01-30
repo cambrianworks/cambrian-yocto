@@ -12,22 +12,6 @@ repos:
 
 local_conf_header:
   platform_specific: |
-    # Due to differences between the different Nvidia SKUs the
-    # location of the rootfs may reside on different physical
-    # devices (e.g., eMMC versus SSD versus SD card, and so on).
-    # By default, on the AGX Orin that the Gigrouter is based around,
-    # the UEFI bootloader will default to loading rootfs from the
-    # SSD, if present. For the time being, the rootfs will be loaded
-    # onto the eMMC so specifying this DTBO patches the bootloader
-    # to boot from that device instead.
-    # TEGRA_BOOTCONTROL_OVERLAYS ensures that the DTBO file is
-    # correctly staged in deployment so it can be included in the
-    # ubild package.
-    TEGRA_BOOTCONTROL_OVERLAYS += ", BootOrderEmmc.dtbo"
-    # OVERLAY_DTB_FILE is a variable used by the tegra flashing
-    # script. During build time it inserts a substitution into a
-    # template which becomes the flash script.
-    OVERLAY_DTB_FILE = "BootOrderEmmc.dtbo"
     # EDK2_BUILD_MODE directs the bootloader to print logging
     # at the specified level. At DEBUG the console will print
     # the device boot order.
