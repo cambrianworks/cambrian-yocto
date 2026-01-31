@@ -265,7 +265,7 @@ if [ $do_partition_drive = "y" ]; then
 fi
 
 if [ $do_write_image = "y" ]; then
-    # Write to APP. APP is always p1 on
+    # Write to APP. APP is always p1
     write_image $drive $image "1"
     # Write to APP_b. APP_b is always p2
     write_image $drive $image "2"
