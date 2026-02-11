@@ -64,3 +64,4 @@ local_conf_header:
     IMAGE_BUILDINFO_VARS:append = "TUNE_FEATURES TARGET_FPU"
     PACKAGE_CLASSES += "package_deb"
     EXTRA_IMAGE_FEATURES ?= "allow-empty-password empty-root-password allow-root-login package-management"
+    INSTALL_IMAGE:append = " cw-interactive-serial"
