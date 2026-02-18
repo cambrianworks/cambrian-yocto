@@ -100,7 +100,7 @@ The secondary serial port, labeled as "Serial Data" and enumerated as `/dev/ttyT
 
 ### Drive provisioning
 
-On systems with additional storage devices, such as NVMe SSD, the cambrian-yocto distribution provides tooling for provisioning drives as a bootable system option. See the [cw-drive-setup recipe](./meta-gig/cw-drive-setup/README.md) for more information.
+On systems with additional storage devices, such as NVMe SSD, the cambrian-yocto distribution provides tooling for provisioning drives as a bootable system option. See the [cw-drive-setup recipe](./meta-gig/recipes-support/cw-drive-setup/README.md) for more information.
 
 ---
 
