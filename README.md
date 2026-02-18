@@ -15,6 +15,7 @@ This software is licensed under the [Apache 2.0 license](./LICENSE.md).
 Supported hardware target platforms are:
 
 * The Cambrian Works GigRouter.
+* The Cambrian Works GigCompute.
 
 ---
 
@@ -85,6 +86,21 @@ Bus 003 Device 022: ID 0955:7523 NVIDIA Corp. APX
 ```
 sudo ./doflash.sh
 ```
+---
+
+## Special considerations
+
+### Hostname
+
+When a system has been freshly flashed it will execute a script to apply a hostname of the format: gc-XXXX, for GigCompute, or gr-XXXX, for GigRouter, where XXXX are the last four digits of the system's unique SOC serial number. The script is only executed once on first boot so the hostname can be updated afterwards if desired.
+
+### Serial port usage
+
+The secondary serial port, labeled as "Serial Data" and enumerated as `/dev/ttyTHS1`, may be used either as a raw data port or an interactive console. By default, no processes will attach themselves so it can be utilised for data. To enable as an interactive console execute: `sudo touch /etc/cw-interactive-ttyTHS1` and reboot.
+
+### Drive provisioning
+
+On systems with additional storage devices, such as NVMe SSD, the cambrian-yocto distribution provides tooling for provisioning drives as a bootable system option. See the [cw-drive-setup recipe](./meta-gig/cw-drive-setup/README.md) for more information.
 
 ---
 
