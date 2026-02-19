@@ -3,7 +3,7 @@
 # Terminate script immediately if a failure is encountered.
 # -e: Exit on error.
 # -u: Exit if an unitialised variable is used.
-# -o pipelail: Exit if any command in a pipeline fails.
+# -o pipefail: Exit if any command in a pipeline fails.
 set -euo pipefail
 
 ###############################################################################

@@ -39,7 +39,7 @@ Each storage device requires an esp partition (boot binary), a kernel partition,
 
 ## Provisioning Process
 
-To facilitate installation of the Cambrian Yocto distrbution on a GigRouter or GigCompute the image contains an executable script for provisioning a storage device as a bootable target.
+To facilitate installation of the Cambrian Yocto distribution on a GigRouter or GigCompute the image contains an executable script for provisioning a storage device as a bootable target.
 
 ### 1. Flash the Cambrian Yocto image to the internal eMMC device.
 
@@ -69,8 +69,8 @@ Enter to continue boot.
 
 ### 3. Provision the target drive.
 
-When ./doflash.sh was executed it created a signed and compressed image of the rootfs named cambrian-image.ext4.img. Transfer the image file to the target system: `scp cambrian-image.ext4.img gigrouter@<IP or hostname>:/tmp/`. From a console, either SSH session or UART, execute the provisioning script with the command: `sudo cw-provision-drive.sh -i /tmp/cambrian-image.ext4.img -d nvme1n1`. N.b., the target drive may be either **nvme0n1** or **nvme1n1** depending on which product configuration the target is. Please consult with Cambrian Works support for guidance on the specific model and hardware configuration.
+When `./doflash.sh` was executed it created a signed and compressed image of the rootfs named cambrian-image.ext4.img. Transfer the image file to the target system: `scp cambrian-image.ext4.img gigrouter@<IP or hostname>:/tmp/`. From a console, either SSH session or UART, execute the provisioning script with the command: `sudo cw-provision-drive.sh -i /tmp/cambrian-image.ext4.img -d nvme1n1`. N.b., the target drive may be either **nvme0n1** or **nvme1n1** depending on which product configuration the target is. Please consult with Cambrian Works support for guidance on the specific model and hardware configuration.
 
 During the provisioning process the target drive will be wiped and partitioned. The EFI boot binary will be written to the esp partition and cambrian-image.ext4.img will be extracted and written to both rootfs partitions (APP and APP_b).
 
-Verify the partition table: `sudo parted /dev/nvme0n1 -s p`
+Verify the partition table: `sudo parted /dev/nvme0n1 -s p` (or `/dev/nvme1n1`)
