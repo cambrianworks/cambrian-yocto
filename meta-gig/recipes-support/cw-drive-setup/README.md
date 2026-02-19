@@ -43,7 +43,7 @@ To facilitate installation of the Cambrian Yocto distribution on a GigRouter or 
 
 ### 1. Flash the Cambrian Yocto image to the internal eMMC device.
 
-To begin, ensure that the current version of the Cambrian Yocto distribution is installed onto the system's internal eMMC device. Doing so provides a usable OS on the system which can be used to access and provision the secondary storage devices, as well as provide a redundant bootable fallback if the secondary storage fails sometime later during operation. Writing the image to eMMC requires the system be put into recovery mode. If an OS is already installed on the eMMC then recovery mode can be entered through a console command:
+To begin, ensure that the current version of the Cambrian Yocto distribution is installed onto the system's internal eMMC device. Doing so provides a usable OS on the system which can be used to access and provision the secondary storage devices, as well as provide a redundant bootable fallback if the secondary storage fails sometime later during operation. Writing the image to eMMC requires the system be put into recovery mode. If an OS is already installed on the eMMC then recovery mode can be entered through a console command: `sudo reboot --force forced-recovery`
 
 Alternatively, the nvidia Orin SOM provides two breakout pins - "recovery" and "reset" - which can be used to force recovery mode externally without the need for prerequisite software installed on the system. Please contact Cambrian Works for hardware support if this approach is preferred.
 

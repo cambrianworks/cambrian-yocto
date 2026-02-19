@@ -190,7 +190,7 @@ stop_k3s() {
 
 unmount_drive() {
     if findmnt --source /dev/$1 >/dev/null; then
-        umount -f /dev/${1}p*
+        umount -lf /dev/${1}p*
     fi
 }
 
@@ -202,7 +202,7 @@ update_extlinux_conf() {
 wipe_drive() {
     msg "Wiping content of drive $1"
     if ! wipefs --all --force /dev/$1; then
-        msg "Wiping target drive failed: $1"
+        msg "Error: Wiping target drive failed: $1"
         exit 1
     fi
 }
