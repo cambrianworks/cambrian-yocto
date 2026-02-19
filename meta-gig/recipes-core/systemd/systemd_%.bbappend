@@ -1,1 +1,1 @@
-PACKAGECONFIG:remove = "networkd"
+PACKAGECONFIG:remove = " networkd"
