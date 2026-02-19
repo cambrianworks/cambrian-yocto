@@ -4,7 +4,7 @@ SSTATE_SKIP_CREATION = "1"
 # so that CI can override with environment variables
 CW_BUILD_RELEASE ?= "2"
 CW_BUILD_MAJOR ?= "1"
-CW_BUILD_MINOR ?= "0"
+CW_BUILD_MINOR ?= "1"
 CW_BUILD_PRETTY = "Cambrian Works BSP ${CW_BUILD_RELEASE}.${CW_BUILD_MAJOR}.${CW_BUILD_MINOR}"
 
 OS_RELEASE_FIELDS += "CW_BUILD_RELEASE"
