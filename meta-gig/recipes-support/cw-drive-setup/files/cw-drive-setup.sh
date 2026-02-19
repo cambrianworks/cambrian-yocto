@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Terminate script immediately if a failure is encountered.
+# -e: Exit on error.
+# -u: Exit if an unitialised variable is used.
+# -o pipefail: Exit if any command in a pipeline fails.
+set -euo pipefail
+
 ###############################################################################
 #
 # Provisions a secondary NVMe drive as a bootable drive.
@@ -53,12 +59,15 @@ create_esp_partition() {
     # It requires a fat32 filesystem, since that can be implemented in
     # smaller targets without complicated drivers, and the boot and
     # esp flags set.
-    parted /dev/$1 --script mkpart primary fat32 $3 $4
+    parted /dev/$1 --script mkpart primary fat32 $3 $4 && partprobe /dev/$1 && udevadm settle && udevadm settle
     partition_number=$(lsblk -n /dev/$1 | grep "part" | wc -l)
-    mkfs.vfat -F 32 -n $2 /dev/$1p$partition_number
-    parted /dev/$1 --script name $partition_number $2
-    parted /dev/$1 --script set $partition_number boot on
-    parted /dev/$1 --script set $partition_number esp on
+    if ! mkfs.vfat -F 32 -n $2 /dev/$1p$partition_number; then
+        msg "Failed to create esp partition"
+        exit 1
+    fi
+    parted /dev/$1 --script name $partition_number $2 && partprobe /dev/$1 && udevadm settle
+    parted /dev/$1 --script set $partition_number boot on && partprobe /dev/$1 && udevadm settle
+    parted /dev/$1 --script set $partition_number esp on && partprobe /dev/$1 && udevadm settle
 
     # Copy the EFI boot binary from the emmc esp partition
     # to the NVME's equivalent.
@@ -80,15 +89,15 @@ create_esp_partition() {
 }
 
 create_partition() {
-    parted /dev/$1 --script mkpart primary $5 $3 $4
+    parted /dev/$1 --script mkpart primary $5 $3 $4 && partprobe /dev/$1 && udevadm settle
     partition_number=$(lsblk -n /dev/$1 | grep "part" | wc -l)
-    parted /dev/$1 --script name $partition_number $2
+    parted /dev/$1 --script name $partition_number $2 && partprobe /dev/$1 && udevadm settle
     mkfs.$5 /dev/$1p$partition_number
-    parted /dev/$1 --script set $partition_number msftdata on
+    parted /dev/$1 --script set $partition_number msftdata on && partprobe /dev/$1 && udevadm settle
 }
 
 create_partition_table() {
-    parted /dev/$1 --script mklabel gpt
+    parted /dev/$1 --script mklabel gpt && partprobe /dev/$1 && udevadm settle
 }
 
 create_raw_partition() {
@@ -100,9 +109,9 @@ create_raw_partition() {
 
     # Create a partition in non-interactive mode. Parameters are:
     # parted /dev/<device> --script mkpart "<partition label>" <start point> <end point>
-    parted /dev/$1 --script mkpart "${2}" $3 $4
+    parted /dev/$1 --script mkpart "${2}" $3 $4 && partprobe /dev/$1 && udevadm settle
     partition_number=$(lsblk -n /dev/$1 | grep "part" | wc -l)
-    parted /dev/$1 --script set $partition_number msftdata on
+    parted /dev/$1 --script set $partition_number msftdata on && partprobe /dev/$1 && udevadm settle
 }
 
 duplicate_partition() {
@@ -180,7 +189,9 @@ stop_k3s() {
 }
 
 unmount_drive() {
-    umount -f /dev/${1}p*
+    if findmnt --source /dev/$1 >/dev/null; then
+        umount -lf /dev/${1}p*
+    fi
 }
 
 update_extlinux_conf() {
@@ -190,7 +201,10 @@ update_extlinux_conf() {
 
 wipe_drive() {
     msg "Wiping content of drive $1"
-    wipefs -af /dev/$1
+    if ! wipefs --all --force /dev/$1; then
+        msg "Error: Wiping target drive failed: $1"
+        exit 1
+    fi
 }
 
 write_image() {
@@ -226,6 +240,12 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+root_device=$(findmnt -nvo SOURCE /)
+if [[ "$root_device" == *"$drive"* ]]; then
+    msg "Error: cannot provision a drive hosting the currently mounted rootfs: $root_device"
+    exit 1
+fi
 
 msg "Setting up drive: $drive, using image: $image"
 read -p "Press ENTER to continue (c to cancel) ... " entry
