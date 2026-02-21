@@ -24,9 +24,9 @@ PASSWORD = "\$6\$d38sBmIFPhm7CsnM\$KCi/5N62VQMo7u8yxV5ZY3xBFGz7aOrd0lvv2GMnVUnBE
 # netdev allows the user to configure NIC devices. i2c allows for
 # using the i2c hardware interface. They're not populated by default
 # so they're create now ahead of adding the user.
-GROUPADD_PARAM:${PN} += "-r netdev; -r i2c; -r gpio"
+GROUPADD_PARAM:${PN} += "-r netdev; -r i2c; -r gpio; -r adm"
 USERADD_PARAM:${PN} = "--create-home \
-                       --groups tty,dialout,i2c,netdev,sudo,gpio \
+                       --groups tty,dialout,i2c,netdev,sudo,gpio,adm \
                        --password '${PASSWORD}' \
                        --user-group gigcompute"
 
