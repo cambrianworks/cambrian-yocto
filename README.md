@@ -17,6 +17,8 @@ Supported hardware target platforms are:
 * The Cambrian Works GigRouter.
 * The Cambrian Works GigCompute.
 
+See [Cambrian Works products](https://cambrianworks.com/products/).
+
 ---
 
 ## Setup and build
