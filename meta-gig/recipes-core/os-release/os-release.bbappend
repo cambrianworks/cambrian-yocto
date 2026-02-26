@@ -11,3 +11,11 @@ OS_RELEASE_FIELDS += "CW_BUILD_RELEASE"
 OS_RELEASE_FIELDS += "CW_BUILD_MAJOR"
 OS_RELEASE_FIELDS += "CW_BUILD_MINOR"
 OS_RELEASE_FIELDS += "CW_BUILD_PRETTY"
+
+# Custom location used by CW applications
+do_install:append() {
+    echo "${CW_BUILD_RELEASE}.${CW_BUILD_MAJOR}.${CW_BUILD_MINOR}" > ${D}${sysconfdir}/cw_bsp_release
+    chmod 0644 ${D}${sysconfdir}/cw_bsp_release
+}
+
+FILES:${PN} += "${sysconfdir}/cw_bsp_release"
