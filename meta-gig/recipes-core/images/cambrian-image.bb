@@ -4,6 +4,7 @@ SUMMARY = "Custom image for Cambrian Works Gig family of products"
 DESCRIPTION = "${SUMMARY}"
 
 DISTRO = "cambrian-distro"
+DISTRO_FEATURES:append = " virtualization"
 
 # Cambrian Works packages
 IMAGE_INSTALL:append = " cw-drive-setup"
@@ -140,6 +141,8 @@ IMAGE_INSTALL:append = " libnvidia-container"
 IMAGE_INSTALL:append = " libnvjitlink"
 IMAGE_INSTALL:append = " libnvjpeg"
 IMAGE_INSTALL:append = " nv-tegra-release"
+IMAGE_INSTALL:append = " nvidia-docker"
+IMAGE_INSTALL:append = " nvidia-container-toolkit"
 IMAGE_INSTALL:append = " tegra-cuda-utils"
 IMAGE_INSTALL:append = " tegra-nvpmodel"
 IMAGE_INSTALL:append = " tegra-nvpmodel-base"
