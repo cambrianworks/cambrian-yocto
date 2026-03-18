@@ -286,14 +286,13 @@ index 7ad4d27875b1..0ac5a5ca4150 100644
  		if (!of_property_read_u32(child, "arm,msi-base-spi",
  					  &spi_start) &&
  		    !of_property_read_u32(child, "arm,msi-num-spis", &nr_spis))
-@@ -438,7 +462,7 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
+@@ -438,6 +462,6 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
  				spi_start, nr_spis);
  
  		ret = gicv2m_init_one(&child->fwnode, spi_start, nr_spis,
 -				      &res, 0);
 +				      &res, &msi, 0);
- 		if (ret) {
- 			of_node_put(child);
+ 		if (ret)
  			break;
 @@ -529,7 +553,7 @@ acpi_parse_madt_msi(union acpi_subtable_headers *header,
  		return -EINVAL;

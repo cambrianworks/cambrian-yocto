@@ -114,5 +114,5 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) document.
 
 ## Further reading
 
-[nvidia Jetson developer guide](https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/index.html)
+[nvidia Jetson developer guide](https://docs.nvidia.com/jetson/archives/r36.5/DeveloperGuide/index.html)
 

@@ -20,11 +20,6 @@ repos:
     path: repos/meta-tegra
     url: https://github.com/OE4T/meta-tegra.git
     branch: scarthgap
-    # This is the commit prior to meta-tegra updating the
-    # scarthgap branch to R36.5.0 which involved some
-    # package reworking which was breaking for us.
-    # TODO: resolve the incompatibilities and move to R36.5.0.
-    commit: "447c21467f65be2389f68a189b6871f13729d222"
 
   meta-openembedded:
     path: repos/meta-openembedded
