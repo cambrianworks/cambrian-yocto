@@ -1,4 +1,4 @@
-# Cambrian Yocto Chanelog
+# Cambrian Yocto Changelog
 
 All notable changes to Cambrian Yocto are documented in this file.
 
