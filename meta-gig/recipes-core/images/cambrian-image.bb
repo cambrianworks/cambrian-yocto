@@ -8,6 +8,7 @@ DISTRO_FEATURES:append = " virtualization"
 
 # Cambrian Works packages
 IMAGE_INSTALL:append = " cw-drive-setup"
+IMAGE_INSTALL:append = " cw-interactive-serial"
 
 # Base image appends
 IMAGE_INSTALL:append = " android-tools-fstools"

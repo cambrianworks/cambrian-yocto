@@ -12,3 +12,6 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 - **[nvidia-kernel-oot]** - Update device tree patch file for R36.5 which enables Message-Signal-Interrupt (MSI) handling of PCIe interface interrupts. Result is the external 10G Ethernet interfaces can run at full speed.
 - **[cambrian-image]** - Remove packages deprecated by R36.5 and add new packages related to tensor and CUDA.
 - **[README]** - Update README links to external R36.5 documentation.
+
+### Fixed
+- **[cw-interactive-serial]**- cw-interactive-serial wasn't being included in final build image without manual rebuilding. Resolved by fixing incorrect variable naming and having the recipe inherit from systemd package.
