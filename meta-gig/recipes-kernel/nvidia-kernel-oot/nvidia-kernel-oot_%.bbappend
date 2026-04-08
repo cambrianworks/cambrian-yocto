@@ -15,6 +15,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += " \
     file://0001-pcie-msi-distribution-devicetree.patch \
+    file://0002-USB-peripheral-mode-devicetree.patch \
     file://tegra234-p3701-0008-gr002007.dts \
 "
 
