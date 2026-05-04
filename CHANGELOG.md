@@ -6,6 +6,8 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.05.04] 2.1.3
+
 ### Added
 - **[gpu-burn]** - Recipe to download and build gpu-burn utility to include in rootfs.
 - **[Power profile]** - Added 60W power profile (only for GigCompute).
