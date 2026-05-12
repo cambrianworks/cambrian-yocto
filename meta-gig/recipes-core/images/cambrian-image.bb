@@ -87,6 +87,7 @@ IMAGE_INSTALL:append = " util-linux"
 IMAGE_INSTALL:append = " util-linux-bash-completion"
 IMAGE_INSTALL:append = " vim"
 IMAGE_INSTALL:append = " which"
+IMAGE_INSTALL:append = " wireguard-tools"
 
 # Python packages
 IMAGE_INSTALL:append = " python3"
