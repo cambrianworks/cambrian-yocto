@@ -6,6 +6,15 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **[nvidia-kernel-oot]** - Update DTS overlay to resolve malformed output on secondary serial port (ttyTHS1).
+
+### Added
+
+- **[wireguard]** - Wireguard VPN utilities.
+- **[chrony]** - chrony utility and service.
+
 ## [2026.05.04] 2.1.3
 
 ### Added

@@ -3,6 +3,7 @@
 
 #include <dt-bindings/gpio/tegra234-gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/memory/tegra234-mc.h>
 
 / {
 	fragment@0 {
@@ -104,6 +105,16 @@
 			       <&p2u_gbe_4>, <&p2u_gbe_5>, <&p2u_gbe_6>, <&p2u_gbe_7>;
 			phy-names = "p2u-0", "p2u-1", "p2u-2", "p2u-3", 
 				    "p2u-4", "p2u-5", "p2u-6", "p2u-7";
+		};
+	};
+
+	// Resolve DMA issue on the THS (Tegra High-Speed) UART
+	// introduced in JetPack 6.2.2. May be removed in future releases:
+	// https://forums.developer.nvidia.com/t/dma-on-dev-ttyths1-corrupts-receiving-data/369191
+	fragment@4 {
+		target-path = "/bus@0/serial@3100000";
+		__overlay__ {
+			iommus = <&smmu_niso0 TEGRA234_SID_GPCDMA>;
 		};
 	};
 };
