@@ -6,6 +6,8 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.05.27] 2.1.4
+
 ### Fixed
 
 - **[nvidia-kernel-oot]** - Update DTS overlay to resolve malformed output on secondary serial port (ttyTHS1).
