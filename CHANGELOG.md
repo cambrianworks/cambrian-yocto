@@ -6,6 +6,11 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.06.03] 2.1.5
+
+### Fixed
+- **[gpu-burn]** - Include pre-compiled compare.ptx file for Orin GPU compatibility]
+
 ## [2026.05.27] 2.1.4
 
 ### Fixed
