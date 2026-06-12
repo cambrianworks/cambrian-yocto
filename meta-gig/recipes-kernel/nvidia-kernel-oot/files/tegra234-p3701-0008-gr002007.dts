@@ -117,4 +117,13 @@
 			iommus = <&smmu_niso0 TEGRA234_SID_GPCDMA>;
 		};
 	};
+
+	// Set PCIe interface to Gen2
+	fragment@5 {
+		target-path = "/bus@0/pcie@141a0000";
+		__overlay__ {
+			max-link-speed = <2>;
+			nvidia,max-speed = <2>;
+		};
+	};
 };
