@@ -20,6 +20,12 @@ repos:
     path: repos/meta-tegra
     url: https://github.com/OE4T/meta-tegra.git
     branch: scarthgap
+    # JetPack 7 has been merged onto meta-tegra master and
+    # may be backported to scarthgap. This commit hash is the
+    # last commit that a cambrian-yocto release was built and
+    # tested with. Fixing to this commit allows us to control
+    # introduction of downstream backporting.
+    commit: "a54b81a15056f15e8a7ac080107b609a19e0326f"
 
   meta-openembedded:
     path: repos/meta-openembedded
