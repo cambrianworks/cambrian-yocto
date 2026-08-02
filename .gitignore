@@ -8,5 +8,11 @@ build/
 venv/
 repos/
 
+# Ignore decrypted key, prevent accidental commit
+# of keys in the clear
+keys/cambrian-works.cert.pem
+keys/private/ca.key.pem
+keys/private/cambrian-works.key.pem
+
 # Ignore session history
 .kas_shell_history

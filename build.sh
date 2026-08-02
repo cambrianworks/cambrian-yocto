@@ -5,23 +5,7 @@
 # Usage:
 # ./build.sh <target>
 #
-# Initiates a build of the gigrouter image for the specified target. Options
-# are:
-#
-#   gigcompute              - Cambrian Work's official GigComputer hardware
-#                             consisting of Nvidia's AGX Orin SoM on a custom
-#                             carrier PCB.
-#
-#   gigrouter               - Cambrian Work's official GigRouter hardware
-#                             consisting of Nvidia's AGX Orin SoM on a custom
-#                             carrier PCB.
-#
-#   gigrouter-nano-devkit   - Nvidia's Orino Nano development board. Warning:
-#                             The hardware is electrically distinct from the
-#                             GigRouter product and isn't a suitable target for
-#                             running Cambrian Works applications. It's included
-#                             here for testing the Yocto build process and
-#                             validating images against a known reference board.
+# Initiates a build of the Cambrian Works image for the specified target.
 #
 ###############################################################################
 
@@ -32,14 +16,11 @@ readonly do_build=y
 
 # Variables
 readonly KAS_DIRECTORY=kas
-readonly GIGROUTER=gigrouter
-readonly GIGCOMPUTE=gigcompute
-readonly GIGCOMPUTE_NANO_DEVKIT=gigcompute-nano-devkit
-readonly GIGROUTER_NANO_DEVKIT=gigrouter-nano-devkit
-readonly GIGCOMPUTE_KAS_CONFIG=$KAS_DIRECTORY/gigcompute-kas-config.yml
-readonly GIGROUTER_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-kas-config.yml
-readonly GIGCOMPUTE_NANO_DEVKIT_KAS_CONFIG=$KAS_DIRECTORY/gigcompute-nano-devkit-kas-config.yml
-readonly GIGROUTER_NANO_DEVKIT_KAS_CONFIG=$KAS_DIRECTORY/gigrouter-nano-devkit-kas-config.yml
+readonly KEYS_DIRECTORY=keys
+readonly TARGET_CONFIGS_PATH=config/target_configs.json
+readonly KEYS=("$KEYS_DIRECTORY/cambrian-works.cert.pem.iron"
+               "$KEYS_DIRECTORY/private/ca.key.pem.iron"
+               "$KEYS_DIRECTORY/private/cambrian-works.key.pem.iron")
 
 msg() {
     echo "[$(date +%Y-%m-%dT%H:%M:%S%z)]: $@" >&2
@@ -55,6 +36,11 @@ checkout_layers() {
 }
 
 clean() {
+    msg "Deleting decrypted keys"
+    for key in "${KEYS[@]}"; do
+        rm -rf "${key%.iron}"
+    done
+
     msg "Deleting build artifacts"
     if command -v "deactivate" &> /dev/null; then
         deactivate
@@ -64,6 +50,62 @@ clean() {
     rm -rf venv
 }
 
+decrypt_keys() {
+    msg "Decrypting keys"
+
+    for key in "${KEYS[@]}"; do
+        if [[ -f "${key%.*}" ]]; then
+            msg "Key already decrypted, skipping: $key"
+            continue
+        fi
+        ironhide file decrypt $key || { msg "Failed to decrypt: $key"; exit 1; }
+    done
+}
+
+get_target_include_keys() {
+    targetFound=$(jq -r --arg key "$1" 'any(.targets[]; has($key))' $TARGET_CONFIGS_PATH)
+    if [ "$targetFound" != "true" ]; then
+        msg "Failed to locate target $1 in $TARGET_CONFIGS_PATH"
+        exit 1
+    fi
+    includeKeys=$(jq -r --arg key "$1" '.targets[] | select(has($key))[$key].includeKeys' $TARGET_CONFIGS_PATH)
+    if [ "$includeKeys" == "true" ]; then
+        echo "true"
+    else
+        # This case would also catch any other falsey value, such
+        # as if the key was absent. All such cases can safely be
+        # converted into an explicit "false" and still honour the
+        # intent of the attribute.
+        echo "false"
+    fi
+}
+
+get_target_config_file() {
+    targetFound=$(jq -r --arg key "$1" 'any(.targets[]; has($key))' $TARGET_CONFIGS_PATH)
+    if [ "$targetFound" != "true" ]; then
+        msg "Failed to locate target $1 in $TARGET_CONFIGS_PATH"
+        exit 1
+    fi
+    configFile=$(jq -r --arg key "$1" '.targets[] | select(has($key))[$key].config' $TARGET_CONFIGS_PATH)
+    if [ -n "$configFile" ] && [ "$configFile" != "null" ]; then
+        echo $configFile
+    else
+        msg "Invalid config file value for target $1: $configFile"
+        exit 1
+    fi
+}
+
+print_targets() {
+    msg "Hardware targets supported by configuration:"
+    echo "-----------------------------------------------"
+    jq -r '.targets[] | to_entries[] | "\(.key)\t\(.value.description)"' $TARGET_CONFIGS_PATH | \
+    while IFS=$'\t' read key description; do
+        echo "Target:       $key"
+        echo "Description:  $description"
+        echo "-----------------------------------------------"
+    done
+}
+
 setup_kas() {
     python -m venv venv
     source venv/bin/activate
@@ -71,63 +113,111 @@ setup_kas() {
 }
 
 usage() {
-    msg "Inavlid parameters
+    msg "
     Usage:
-    ./build.sh <target | clean>
-    <target>   -   Hardware platform to target build. Options:
+    ./build.sh <target | targets | clean | help>
+        <target> - Hardware platform to target build.
 
-                   gigcompute             - Cambrian Works official GigComute hardare.
-                   gigrouter              - Cambrian Works official GigRouter hardware.
-                   gigrouter-nano-devkit  - Nvidia reference board.
-                   gigcompute-nano-devkit - Nvidia reference board.
-                   clean                  - Exit venv shell (if running) and delete
-                                            build artifacts."
+        clean    - Exit venv shell (if running) and delete
+                   build artifacts.
+
+        targets  - Lists the target hardware specified in
+                   the targets configuration.
+
+        help     - Display help information"
+}
+
+validate_config() {
+    msg "Validating $TARGET_CONFIGS_PATH"
+    if jq -e 'has("targets")' $TARGET_CONFIGS_PATH > /dev/null; then
+        if jq -e '.targets | type != "array"' $TARGET_CONFIGS_PATH > /dev/null; then
+            msg "Invalid type for 'targets' key"
+            exit 1
+        fi
+        if jq -e '.targets | length == 0' $TARGET_CONFIGS_PATH > /dev/null; then
+            msg "Content of 'targets' is empty"
+            exit 1
+        fi
+        msg "Targets config validated"
+    else
+        msg "targets key absent in $TARGET_CONFIGS_PATH"
+        exit 1
+    fi
 }
 
 ###############################################################################
 # Execute script
 ###############################################################################
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -lt 1 ]; then
     usage
     exit 1
 fi
 
-configfile=$GIGROUTER_KAS_CONFIG
-if [ "$1" == $GIGROUTER ]; then
-    configfile=$GIGROUTER_KAS_CONFIG
-elif [ "$1" == $GIGCOMPUTE ]; then
-    configfile=$GIGCOMPUTE_KAS_CONFIG
-elif [ "$1" == $GIGCOMPUTE_NANO_DEVKIT ]; then
-    configfile=$GIGCOMPUTE_NANO_DEVKIT_KAS_CONFIG
-elif [ "$1" == $GIGROUTER_NANO_DEVKIT ]; then
-    configfile=$GIGROUTER_NANO_DEVKIT_KAS_CONFIG
-elif [ "$1" == "clean" ]; then
-    read -p "Cleaning build artifacts. Press ENTER to continue (c to cancel) ..." entry
-    if [ ! -z $entry ]; then
-        if [ $entry = "c" ]; then
-            msg "Clean cancelled"
+target=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -c|--clean)
+            read -p "Cleaning build artifacts. Press ENTER to continue (c to cancel) ..." entry
+            if [ ! -z $entry ]; then
+                if [ $entry = "c" ]; then
+                    msg "Clean cancelled"
+                    exit 0
+                fi
+            fi
+            clean
             exit 0
-        fi
-    fi
-    clean
-    exit 0
-else
-    usage
+            ;;
+        -l|--list)
+            print_targets
+            exit 0
+            ;;
+        -t|--target)
+            target=$2
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            shift 1
+            ;;
+    esac
+done
+
+if [[ -z "$target" ]]; then
+    msg "Target not specified"
     exit 1
 fi
-msg "Building for $1"
+
+if [ ! -f "$TARGET_CONFIGS_PATH" ]; then
+    msg "Failed to locate target configs: $TARGET_CONFIGS_PATH"
+    exit 1
+fi
+validate_config
+
+configFile=$KAS_DIRECTORY/$(get_target_config_file $target)
+includeKeys=$(get_target_include_keys $target)
+
+msg "Building $target"
+msg "Build configuration: $configFile"
+msg "Including keys: $includeKeys"
+
+if [ "$includeKeys" == "true" ]; then
+    decrypt_keys
+fi
 
 if [ $do_setup_kas = "y" ]; then
-    setup_kas $configfile
+    setup_kas $configFile
 fi
 
 if [ $do_checkout_layers = "y" ]; then
-    checkout_layers $configfile
+    checkout_layers $configFile
 fi
 
 if [ $do_build = "y" ]; then
-    build $configfile
+    build $configFile
 fi
 
 msg "Build complete"

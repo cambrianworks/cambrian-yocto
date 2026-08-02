@@ -1,0 +1,21 @@
+header:
+  version: 14
+  includes:
+    - ./kas/gig-base-kas-config.yml
+
+machine: gigrouter-nano
+
+repos:
+  meta-gigrouter:
+    layers:
+      meta-gigrouter:
+
+local_conf_header:
+  platform_specific: |
+    # EDK2_BUILD_MODE directs the bootloader to print logging
+    # at the specified level. At DEBUG the console will print
+    # the device boot order.
+    EDK2_BUILD_MODE:pn-edk2-firmware-tegra = "DEBUG"
+  gigrouter_includes: |
+    IMAGE_INSTALL:append = " gigrouter-set-hostname"
+    IMAGE_INSTALL:append = " gigrouter-user"
