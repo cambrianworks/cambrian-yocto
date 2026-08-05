@@ -1,0 +1,74 @@
+{
+    "targets": [
+        {
+            "gigcompute": {
+                "config": "gigcompute.yml",
+                "description": "GigCompute build for GigCompute hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigcompute-nano": {
+                "config": "gigcompute-nano.yml",
+                "description": "GigCompute build for nvidia Orin Nano hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigcompute-nano-oss": {
+                "config": "gigcompute-nano.yml",
+                "description": "GigCompute build for nvidia Orin Nano hardware target.",
+                "includeKeys": false
+            }
+        },
+        {
+            "gigcompute-oss": {
+                "config": "gigcompute.yml",
+                "description": "GigCompute build for GigCompute hardware target.",
+                "includeKeys": false
+            }
+        },
+        {
+            "gigrouter": {
+                "config": "gigrouter.yml",
+                "description": "GigRouter build for GigRouter hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigrouter-commercial": {
+                "config": "gigrouter-commercial.yml",
+                "description": "GigRouter build for GigRouter hardware populated with a commercial SOM, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigrouter-commercial-oss": {
+                "config": "gigrouter-commercial.yml",
+                "description": "GigRouter build for GigRouter hardware populated with a commercial SOM.",
+                "includeKeys": false
+            }
+        },
+        {
+            "gigrouter-nano": {
+                "config": "gigrouter-nano.yml",
+                "description": "GigRouter build for nvidia Orin Nano hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigrouter-nano-oss": {
+                "config": "gigrouter-nano.yml",
+                "description": "GigRouter build for nvidia Orin Nano hardware target.",
+                "includeKeys": false
+            }
+        },
+        {
+            "gigrouter-oss": {
+                "config": "gigrouter.yml",
+                "description": "GigRouter build for GigRouter hardware target.",
+                "includeKeys": false
+            }
+        }
+    ]
+}
