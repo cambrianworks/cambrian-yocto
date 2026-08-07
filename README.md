@@ -27,10 +27,23 @@ See [Cambrian Works products](https://cambrianworks.com/products/).
 Executing the `build.sh` script will automatically checkout the artifacts required to setup a build environment and produce an image. Usage is:
 
 ```
-./build.sh gigrouter
+    ./build.sh <--target | --list | --clean | --help>
+        -t|--target - Hardware platform to target build.
+
+        -c|--clean  - Exit venv shell (if running) and delete
+                      build artifacts.
+
+        -l|--list   - Lists the target hardware specified in
+                      the targets configuration.
+
+        -h|--help   - Display help information"
 ```
 
-Replacing the `gigrouter` argument with `clean` will delete all checked out repositories and build artifacts.
+For example:
+
+```
+./build.sh -t gigrouter-oss
+```
 
 ### Manual procedures
 

@@ -115,16 +115,16 @@ setup_kas() {
 usage() {
     msg "
     Usage:
-    ./build.sh <target | targets | clean | help>
-        <target> - Hardware platform to target build.
+    ./build.sh <--target | --list | --clean | --help>
+        -t|--target - Hardware platform to target build.
 
-        clean    - Exit venv shell (if running) and delete
-                   build artifacts.
+        -c|--clean  - Exit venv shell (if running) and delete
+                      build artifacts.
 
-        targets  - Lists the target hardware specified in
-                   the targets configuration.
+        -l|--list   - Lists the target hardware specified in
+                      the targets configuration.
 
-        help     - Display help information"
+        -h|--help   - Display help information"
 }
 
 validate_config() {
