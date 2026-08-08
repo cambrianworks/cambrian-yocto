@@ -6,6 +6,11 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **[build.sh]** - Remove hardcoded targets in build script in favour of JSON based configuration. Include
+signing keys in repository in encrypted form.
+- **[tegra-binaries]** - Set the default power profile for GigRouter to ID=3 (50W with emphasis on GPUs).
+
 ## [2026.06.12] 2.1.6
 
 ### Fixed
