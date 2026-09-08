@@ -7,6 +7,20 @@
                 "includeKeys": true
             }
         },
+    {
+            "gigcompute-devkit": {
+                "config": "gigcompute-devkit.yml",
+                "description": "GigCompute build for nvidia AGX Orin devkit hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigcompute-devkit-oss": {
+                "config": "gigcompute-devkit.yml",
+                "description": "GigCompute build for nvidia AGX Orin dev kit hardware target.",
+                "includeKeys": false
+            }
+        },
         {
             "gigcompute-nano": {
                 "config": "gigcompute-nano.yml",
@@ -46,6 +60,20 @@
             "gigrouter-commercial-oss": {
                 "config": "gigrouter-commercial.yml",
                 "description": "GigRouter build for GigRouter hardware populated with a commercial SOM.",
+                "includeKeys": false
+            }
+        },
+    {
+            "gigrouter-devkit": {
+                "config": "gigrouter-devkit.yml",
+                "description": "GigRouter build for AGX nvidia Orin dev kit hardware target, including Cambrian Works keys.",
+                "includeKeys": true
+            }
+        },
+        {
+            "gigrouter-devkit-oss": {
+                "config": "gigrouter-devkit.yml",
+                "description": "GigRouter build for AGX nvidia Orin dev kit hardware target.",
                 "includeKeys": false
             }
         },
