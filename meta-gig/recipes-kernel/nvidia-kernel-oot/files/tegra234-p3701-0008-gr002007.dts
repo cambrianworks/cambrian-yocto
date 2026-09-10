@@ -126,4 +126,18 @@
 			nvidia,max-speed = <2>;
 		};
 	};
+
+	// Enable PPS pin
+	fragment@6 {
+		target-path = "/";
+		__overlay__ {
+			pps: pps-gpio {
+				status = "okay";
+				compatible = "pps-gpio";
+				// GPIO8:
+				gpios = <&gpio_aon 9 0>;
+				assert-falling-edge;
+			};
+		};
+	};
 };
