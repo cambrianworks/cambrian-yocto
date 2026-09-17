@@ -40,7 +40,7 @@ VIRTUAL-RUNTIME_base-utils = "coreutils"
 # earlycon=uart8250,mmio32,0xc280000
 UBOOT_EXTLINUX = "1"
 UBOOT_EXTLINUX_KERNEL_ARGS = "root=/dev/mmcblk0p1 rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 \
-console=ttyAMA0,115200 console=tty0 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nospectre_bhb"
+console=ttyAMA0,115200 console=tty0 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nospectre_bhb audit=0"
 
 MACHINE_EXTRA_RRECOMMENDS:append = " kernel-modules"
 
