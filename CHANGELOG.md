@@ -6,6 +6,8 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## 2026.09.29 2.1.7
+
 ### Fixed
 
 - **[linux-jammy-nvidia-tegra]** - Backport keyring related fix.
