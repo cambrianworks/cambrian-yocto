@@ -10,6 +10,16 @@ DISTRO_FEATURES:append = " virtualization"
 IMAGE_INSTALL:append = " cw-drive-setup"
 IMAGE_INSTALL:append = " cw-interactive-serial"
 
+# When SUPPORT_OTA is set the additional
+# packages required for over-the-air
+# updates are included in the build,
+# otherwise they are omitted so as not
+# to encumber builds which won't ever
+# use them.
+IMAGE_INSTALL:append = "${@' rauc' if d.getVar('SUPPORT_OTA', False) == '1' else ''}"
+IMAGE_INSTALL:append = "${@' rauc-conf' if d.getVar('SUPPORT_OTA', False) == '1' else ''}"
+IMAGE_INSTALL:append = "${@' cambrian-bundle' if d.getVar('SUPPORT_OTA', False) == '1' else ''}"
+
 # Base image appends
 IMAGE_INSTALL:append = " android-tools-fstools"
 IMAGE_INSTALL:append = " apt"
