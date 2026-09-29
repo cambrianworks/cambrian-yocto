@@ -6,7 +6,16 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **[linux-jammy-nvidia-tegra]** - Backport keyring related fix.
+- **[machine.conf]** - Remove audit logs from debug serial console.
+
 ### Added
+
+- **[linux-jammy-nvidia-tegra]** - Include IGC driver.
+- **[build.sh]** - Add support for nvidia DevKit as hardware target.
+- **[nvidia-kernel-oot]** - Enable GPIO8 as PPS.
 - **[build.sh]** - Remove hardcoded targets in build script in favour of JSON based configuration. Include
 signing keys in repository in encrypted form.
 - **[tegra-binaries]** - Set the default power profile for GigRouter to ID=3 (50W with emphasis on GPUs).
