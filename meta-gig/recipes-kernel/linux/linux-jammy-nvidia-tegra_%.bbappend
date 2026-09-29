@@ -14,6 +14,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += " \
     file://0001-pcie-msi-distribution-kernel.patch \
+    file://0002-assoc_array.patch \
+    file://0003-keyring.patch \
     file://custom-options.cfg \
 "
 
