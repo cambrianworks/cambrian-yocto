@@ -1,9 +1,11 @@
 /dts-v1/;
 /plugin/;
 
+#include <dt-bindings/clock/tegra234-clock.h>
 #include <dt-bindings/gpio/tegra234-gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/memory/tegra234-mc.h>
+#include <dt-bindings/reset/tegra234-reset.h>
 
 / {
 	fragment@0 {
@@ -131,12 +133,78 @@
 	fragment@6 {
 		target-path = "/";
 		__overlay__ {
-			pps: pps-gpio {
+			pps0: pps-gpio-0 {
 				status = "okay";
 				compatible = "pps-gpio";
 				// GPIO8:
 				gpios = <&gpio_aon 9 0>;
 				assert-falling-edge;
+			};
+		};
+	};
+
+	// Enable PPS pin
+	fragment@7 {
+		target-path = "/";
+		__overlay__ {
+			pps1: pps-gpio-1 {
+				status = "okay";
+				compatible = "pps-gpio";
+				// GPIO9:
+				gpios = <&gpio_aon 8 0>;
+				assert-falling-edge;
+			};
+		};
+	};
+
+	// UART4 was removed from the underlying system device trees.
+	// It's enabled here by reintroducing the entire node.
+	// Run in PIO mode rather than using DMA.
+	fragment@8 {
+		target-path = "/";
+		__overlay__ {
+			aliases {
+				serial3 = "/bus@0/serial@3130000";
+			};
+			bus@0 {
+				serial@3130000 {
+					compatible = "nvidia,tegra194-hsuart";
+					reg = <0x0 0x03130000 0x0 0x10000>;
+					interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
+					clocks = <&bpmp TEGRA234_CLK_UARTD>;
+					clock-names = "serial";
+					resets = <&bpmp TEGRA234_RESET_UARTD>;
+					reset-names = "serial";
+					/delete-property/ dmas;
+					/delete-property/ dma-names;
+					/delete-property/ iommus;
+					/delete-property/ dma-coherant;
+					status = "okay";
+				};
+			};
+		};
+	};
+
+	// Ensure UART2 is aliased to ttyTHS4 at runtime
+	fragment@9 {
+		target-path = "/";
+		__overlay__ {
+			aliases {
+				serial4 = "/bus@0/serial@3140000";
+			};
+		};
+	};
+
+	// This represents a debug UART which can interfere with
+	// UART5. It's disabled here so that UART5 can operate
+	// as a data port.
+	fragment@10 {
+		target-path = "/";
+		__overlay__ {
+			bus@0 {
+				serial@31d0000 {
+					status = "disabled";
+				};
 			};
 		};
 	};
