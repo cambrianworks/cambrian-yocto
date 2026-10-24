@@ -19,16 +19,28 @@ readonly KAS_DIRECTORY=kas
 readonly KEYS_DIRECTORY=keys
 readonly TARGET_CONFIGS_PATH=config/target_configs.json
 readonly KEYS=("$KEYS_DIRECTORY/cambrian-works.cert.pem.iron"
-               "$KEYS_DIRECTORY/private/ca.key.pem.iron"
-               "$KEYS_DIRECTORY/private/cambrian-works.key.pem.iron")
+    "$KEYS_DIRECTORY/private/ca.key.pem.iron"
+    "$KEYS_DIRECTORY/private/cambrian-works.key.pem.iron")
 
 msg() {
     echo "[$(date +%Y-%m-%dT%H:%M:%S%z)]: $@" >&2
 }
 
 build() {
-    msg "Initiating build with configuration: $@"
-    kas-container build $@
+    msg "Initiating build with configuration: $1"
+    if [[ "$2" == "true" ]]; then
+        msg "Building with OTA support"
+        SUPPORT_OTA=1
+    else
+        msg "Building without OTA support"
+        SUPPORT_OTA=0
+    fi
+    kas-container build $1
+}
+
+build_bundle() {
+    msg "Creating bundle with configuration: $@"
+    kas-container shell $@ -c "bitbake cambrian-bundle"
 }
 
 checkout_layers() {
@@ -42,7 +54,7 @@ clean() {
     done
 
     msg "Deleting build artifacts"
-    if command -v "deactivate" &> /dev/null; then
+    if command -v "deactivate" &>/dev/null; then
         deactivate
     fi
     rm -rf build
@@ -58,7 +70,10 @@ decrypt_keys() {
             msg "Key already decrypted, skipping: $key"
             continue
         fi
-        ironhide file decrypt $key || { msg "Failed to decrypt: $key"; exit 1; }
+        ironhide file decrypt $key || {
+            msg "Failed to decrypt: $key"
+            exit 1
+        }
     done
 }
 
@@ -77,6 +92,7 @@ get_target_include_keys() {
         # converted into an explicit "false" and still honour the
         # intent of the attribute.
         echo "false"
+    # If RAUC marks the slot as stable, finalize it in the hardware registry
     fi
 }
 
@@ -98,12 +114,12 @@ get_target_config_file() {
 print_targets() {
     msg "Hardware targets supported by configuration:"
     echo "-----------------------------------------------"
-    jq -r '.targets[] | to_entries[] | "\(.key)\t\(.value.description)"' $TARGET_CONFIGS_PATH | \
-    while IFS=$'\t' read key description; do
-        echo "Target:       $key"
-        echo "Description:  $description"
-        echo "-----------------------------------------------"
-    done
+    jq -r '.targets[] | to_entries[] | "\(.key)\t\(.value.description)"' $TARGET_CONFIGS_PATH |
+        while IFS=$'\t' read key description; do
+            echo "Target:             $key"
+            echo "Description:    $description"
+            echo "-----------------------------------------------"
+        done
 }
 
 setup_kas() {
@@ -114,27 +130,27 @@ setup_kas() {
 
 usage() {
     msg "
-    Usage:
-    ./build.sh <--target | --list | --clean | --help>
-        -t|--target - Hardware platform to target build.
+        Usage:
+        ./build.sh <--target | --list | --clean | --help>
+                -t|--target - Hardware platform to target build.
 
-        -c|--clean  - Exit venv shell (if running) and delete
-                      build artifacts.
+                -c|--clean    - Exit venv shell (if running) and delete
+                                            build artifacts.
 
-        -l|--list   - Lists the target hardware specified in
-                      the targets configuration.
+                -l|--list     - Lists the target hardware specified in
+                                            the targets configuration.
 
-        -h|--help   - Display help information"
+                -h|--help     - Display help information"
 }
 
 validate_config() {
     msg "Validating $TARGET_CONFIGS_PATH"
-    if jq -e 'has("targets")' $TARGET_CONFIGS_PATH > /dev/null; then
-        if jq -e '.targets | type != "array"' $TARGET_CONFIGS_PATH > /dev/null; then
+    if jq -e 'has("targets")' $TARGET_CONFIGS_PATH >/dev/null; then
+        if jq -e '.targets | type != "array"' $TARGET_CONFIGS_PATH >/dev/null; then
             msg "Invalid type for 'targets' key"
             exit 1
         fi
-        if jq -e '.targets | length == 0' $TARGET_CONFIGS_PATH > /dev/null; then
+        if jq -e '.targets | length == 0' $TARGET_CONFIGS_PATH >/dev/null; then
             msg "Content of 'targets' is empty"
             exit 1
         fi
@@ -157,32 +173,32 @@ fi
 target=""
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -c|--clean)
-            read -p "Cleaning build artifacts. Press ENTER to continue (c to cancel) ..." entry
-            if [ ! -z $entry ]; then
-                if [ $entry = "c" ]; then
-                    msg "Clean cancelled"
-                    exit 0
-                fi
+    -c | --clean)
+        read -p "Cleaning build artifacts. Press ENTER to continue (c to cancel) ..." entry
+        if [ ! -z $entry ]; then
+            if [ $entry = "c" ]; then
+                msg "Clean cancelled"
+                exit 0
             fi
-            clean
-            exit 0
-            ;;
-        -l|--list)
-            print_targets
-            exit 0
-            ;;
-        -t|--target)
-            target=$2
-            shift 2
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            shift 1
-            ;;
+        fi
+        clean
+        exit 0
+        ;;
+    -l | --list)
+        print_targets
+        exit 0
+        ;;
+    -t | --target)
+        target=$2
+        shift 2
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        shift 1
+        ;;
     esac
 done
 
@@ -217,7 +233,7 @@ if [ $do_checkout_layers = "y" ]; then
 fi
 
 if [ $do_build = "y" ]; then
-    build $configFile
+    build $configFile $includeKeys
 fi
 
 msg "Build complete"
