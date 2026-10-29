@@ -138,7 +138,7 @@
 				compatible = "pps-gpio";
 				// GPIO8:
 				gpios = <&gpio_aon 9 0>;
-				assert-falling-edge;
+				assert-rising-edge;
 			};
 		};
 	};
@@ -152,7 +152,7 @@
 				compatible = "pps-gpio";
 				// GPIO9:
 				gpios = <&gpio_aon 8 0>;
-				assert-falling-edge;
+				assert-rising-edge;
 			};
 		};
 	};

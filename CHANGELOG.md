@@ -6,6 +6,14 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- nvidia-kernel-oot - Trigger PPS inputs on rising, rather than falling edge.
+
+### Added
+
+- nvidia-kernel-oot - Enable UARTs 2, 4, and 5.
+
 ## 2026.09.29 2.1.7
 
 ### Fixed
