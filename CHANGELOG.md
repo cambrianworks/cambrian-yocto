@@ -6,6 +6,8 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## 2026.10.29 2.1.8
+
 ### Fixed
 
 - nvidia-kernel-oot - Trigger PPS inputs on rising, rather than falling edge.
