@@ -1,0 +1,88 @@
+#!/bin/bash
+
+###############################################################################
+#
+# Usage:
+# ./jetson-boot-backend <command>
+#
+# Performs an action pertaining to managing the current A/B partition
+# state..Commands match directives which will be issued by the RAUC
+# service when running on target and are not expected to be manually
+# invoked (although can be for testing purposes).
+#
+# Commands:
+#
+#     get-current - Prints the current logical parition set (A or B).
+#     get-primary - Prints the set logical parition set (A or B). On nvidia
+#                   UEFI this is equivalent to get-current.
+#     set-primary - Selects the next set of paritions to use. Reboot required.
+#     get-state   - Returns whether the system is stable enough to declare
+#                   the current parition set as healthy.
+#     set-state   - Declare the health of the curret parition set.
+#
+###############################################################################
+
+current_slot() {
+    currentSlot=$(nvbootctrl get-current-slot)
+    if [ "$currentSlot" -eq 0 ]; then
+        echo "A"
+    elif [ "$currentSlot" -eq 1 ]; then
+        echo "B"
+    else
+        echo "Invalid current slot value: $currentSlot"
+        exit 1
+    fi
+}
+
+###############################################################################
+# Execute script
+###############################################################################
+
+if [ "$#" -lt 1 ]; then
+    echo "Command required"
+    exit 1
+fi
+
+cmd="$1"
+arg="$2"
+
+case "$cmd" in
+get-current)
+    current_slot
+    ;;
+get-primary)
+    # On nvidia Jetson this operation is equivalent to
+    # get-current. Included to complete the interface
+    # required for rauc.
+    current_slot
+    ;;
+get-state)
+    # On nvidia Jetson the proof of health is the OS running
+    # sufficiently well to execute the rauc service and run
+    # this script.
+    echo "good"
+    ;;
+set-primary)
+    echo "set-primary: $arg"
+    if [ "$arg" = "A" ]; then
+        nvbootctrl set-active-boot-slot 0
+    elif [ "$arg" = "B" ]; then
+        nvbootctrl set-active-boot-slot 1
+    else
+        echo "Cannot set-primary, invalid slot requested: $arg"
+        exit 1
+    fi
+    ;;
+set-state)
+    echo "set-state: $arg"
+    if [ "$arg" = "good" ]; then
+        nvbootctrl mark-as-good
+    fi
+    ;;
+esac
+
+exit 0
+
+###############################################################################
+# End execution
+###############################################################################
