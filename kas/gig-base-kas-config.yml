@@ -1,16 +1,66 @@
 header:
   version: 14
 
+build_system: oe
+
 distro: cambriandistro
 
 target:
   - cambrian-image
 
 repos:
+  meta-openembedded:
+    path: repos/meta-openembedded
+    url: https://git.openembedded.org/meta-openembedded
+    branch: wrynose
+    # Commit date: Tue Sep 29 15:56:12 2026
+    commit: f28a144aa0a0ae05ca2ee91e1aef6aa05f6a12db
+    layers:
+      meta-filesystems:
+      meta-networking:
+      meta-python:
+      meta-oe:
+
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    branch: master
+    # Commit date: Tue Oct 6 21:33:34 2026
+    commit: 3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e
+    path: repos/bitbake
+    layers:
+      bitbake: disabled
+
+  meta-yocto:
+    url: https://git.yoctoproject.org/meta-yocto
+    branch: wrynose
+    # Commit date: Wed Sep 30 10:48:47 2026
+    commit: 7c25b11156553145fa6b241a2d4f65d94438f804
+    path: repos/meta-yocto
+    layers:
+      meta-poky:
+
+  openembedded-core:
+    path: repos/openembedded-core
+    url: https://git.openembedded.org/openembedded-core
+    # Commit date: Fri Oct 9 13:50:42 2026
+    commit: 636e5d3b12d54951c13d57346648bc29a0e6b24e
+    branch: wrynose
+    layers:
+      meta:
+
+  meta-virtualization:
+    path: repos/meta-virtualization
+    url: https://git.yoctoproject.org/meta-virtualization
+    branch: wrynose
+    # Commit date: Mon Sep 28 23:12:15 2026
+    commit: 2807579615834a143c8ed453b463f93f43446019
+
   tegra-demo-distro:
     url: https://github.com/OE4T/tegra-demo-distro
-    branch: scarthgap
     path: repos/tegra-demo-distro
+    branch: wrynose
+    # Commit date: Sat Oct 3 06:53:07 202
+    commit: 6eab4529e8ba83231214677dc70f504ca1cb326f
     layers:
       layers/meta-tegra-support:
       layers/meta-tegrademo:
@@ -19,44 +69,20 @@ repos:
   meta-tegra:
     path: repos/meta-tegra
     url: https://github.com/OE4T/meta-tegra.git
-    branch: scarthgap
-    # JetPack 7 has been merged onto meta-tegra master and
-    # may be backported to scarthgap. This commit hash is the
-    # last commit that a cambrian-yocto release was built and
-    # tested with. Fixing to this commit allows us to control
-    # introduction of downstream backporting.
-    commit: "a54b81a15056f15e8a7ac080107b609a19e0326f"
-
-  meta-openembedded:
-    path: repos/meta-openembedded
-    url: https://git.openembedded.org/meta-openembedded
-    branch: scarthgap
-    layers:
-      meta-filesystems:
-      meta-networking:
-      meta-python:
-      meta-oe:
+    branch: wrynose
+    # Commit date: Tue Oct 6 11:44:47 2026
+    commit: feab7664000f313f655d20d2f39c04432214dc25
 
   meta-tegra-community:
     path: repos/meta-tegra-community
     url: https://github.com/OE4T/meta-tegra-community
-    branch: scarthgap
-
-  meta-virtualization:
-    path: repos/meta-virtualization
-    url: https://git.yoctoproject.org/meta-virtualization
-    branch: scarthgap
+    branch: wrynose
+    # Commit date: Mon Aug 31 11:19:39 2026
+    commit: e8fcbd636b65d051de96563de8d28f534cefac26
 
   meta-gig:
     layers:
       meta-gig:
-
-  poky:
-    path: repos/poky
-    url: https://git.yoctoproject.org/poky
-    branch: scarthgap
-    layers:
-      meta:
 
 local_conf_header:
   tegra: |
@@ -70,3 +96,5 @@ local_conf_header:
     IMAGE_BUILDINFO_VARS:append = "TUNE_FEATURES TARGET_FPU"
     PACKAGE_CLASSES += "package_deb"
     EXTRA_IMAGE_FEATURES ?= "allow-empty-password empty-root-password allow-root-login package-management"
+    DOCKER_OCI_RUNTIMES = '{"nvidia":{"args":[],"path":"nvidia-container-runtime"}}'
+    DOCKER_DEFAULT_RUNTIME = "nvidia"

@@ -223,15 +223,15 @@ image=system.img
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -d|--drive)
+    -d | --drive)
         drive="$2"
         shift 2
         ;;
-        -h|--help)
+    -h | --help)
         usage
         exit 0
         ;;
-        -i|--image)
+    -i | --image)
         image="$2"
         shift 2
         ;;
@@ -292,6 +292,10 @@ if [ $do_write_image = "y" ]; then
 fi
 
 if [ $do_update_extlinux_conf = "y" ]; then
+    # Ensure that the B partition of the eMMC drive, which
+    # was booted to run this script, isn't overlooked and
+    # is also bootable.
+    update_extlinux_conf "mmcblk0"
     update_extlinux_conf $drive
 fi
 

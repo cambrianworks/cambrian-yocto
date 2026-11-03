@@ -7,11 +7,10 @@ ROOTFSPART_SIZE_DEFAULT ?= "59055800320"
 EMMC_BCT ?= "tegra234-p3701-0008-sdram-l4t.dts"
 PARTITION_LAYOUT_TEMPLATE_DEFAULT ?= "flash_t234_qspi_sdmmc_industrial.xml"
 TEGRA_AUDIO_DEVICE ?= "tegra-ape"
-TNSPEC_BOOTDEV_DEFAULT = "mmcblk0p1"
-TNSPEC_BOOTDEV = "nvme0n1p1"
+TNSPEC_BOOTDEV = "mmcblk0p1"
 
 # Needed to disable 10g PHY on built-in ethernet
-ODMDATA = "gbe-uphy-config-0,hsstp-lane-map-3,hsio-uphy-config-16,nvhs-uphy-config-0"
+TEGRA_FLASHVAR_ODMDATA = "gbe-uphy-config-0,hsstp-lane-map-3,hsio-uphy-config-16,nvhs-uphy-config-0"
 
 TEGRA_FLASHVAR_PINMUX_CONFIG = "tegra234-gigrouter-mb1-bct-pinmux-p3701-0000-a04.dtsi"
 TEGRA_FLASHVAR_BPFDTB_FILE = "tegra234-bpmp-3701-0008-3737-0000.dtb"

@@ -1,0 +1,31 @@
+Upstream-Status: Inappropriate [Platform specialisation]
+
+--- a/hardware/nvidia/t23x/nv-public/nv-soc/tegra234-soc-camera.dtsi
++++ a/hardware/nvidia/t23x/nv-public/nv-soc/tegra234-soc-camera.dtsi
+@@ -82,7 +82,7 @@
+ 
+ 				iommus = <&smmu_niso1 TEGRA234_SID_ISP>;
+ 				dma-coherent;
+-				status = "okay";
++				status = "disabled";
+ 			};
+ 
+ 			isp_thi: isp-thi@14b00000 {
+@@ -90,7 +90,7 @@
+ 				resets = <&bpmp TEGRA234_RESET_ISP>;
+ 				iommus = <&smmu_niso1 TEGRA234_SID_ISP>;
+ 				dma-coherent;
+-				status = "okay";
++				status = "disabled";
+ 			};
+ 
+ 			nvcsi: nvcsi@15a00000 {
+@@ -99,7 +99,7 @@
+ 				reset-names = "nvcsi";
+ 				clocks = <&bpmp TEGRA234_CLK_NVCSI>;
+ 				clock-names = "nvcsi";
+-				status = "okay";
++				status = "disabled";
+ 			};
+ 		};
+ 	};

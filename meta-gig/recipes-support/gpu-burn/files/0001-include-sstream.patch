@@ -1,0 +1,12 @@
+Upstream-Status: Inappropriate [Toolchain specific]
+
+--- a/gpu_burn-drv.cpp
++++ b/gpu_burn-drv.cpp
+@@ -46,6 +46,7 @@
+ #include <fstream>
+ #include <map>
+ #include <signal.h>
++#include <sstream>
+ #include <stdexcept>
+ #include <string.h>
+ #include <string>

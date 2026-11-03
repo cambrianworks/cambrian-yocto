@@ -9,9 +9,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://cuda-toolkit-11-4.txt \
 "
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}/opt/dummy
-    install -m 0755 ${WORKDIR}/cuda-toolkit-11-4.txt ${D}/opt/dummy/cuda-toolkit-11-4.txt
+    install -m 0755 ${S}/cuda-toolkit-11-4.txt ${D}/opt/dummy/cuda-toolkit-11-4.txt
 }
 FILES:${PN} += "/opt/dummy/cuda-toolkit-11-4.txt"

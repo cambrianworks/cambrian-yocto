@@ -9,9 +9,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://apt-transport-https.txt \
 "
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}/opt/dummy
-    install -m 0755 ${WORKDIR}/apt-transport-https.txt ${D}/opt/dummy/apt-transport-https.txt
+    install -m 0755 ${S}/apt-transport-https.txt ${D}/opt/dummy/apt-transport-https.txt
 }
 FILES:${PN} += "/opt/dummy/apt-transport-https.txt"

@@ -6,6 +6,47 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **[KAS base configuration]** - Advance from scarthgap branch to wrynose.
+- **[nvidia-kernel-oot]** - Updated PCIe MSI handling patch to match updated kernel source.
+- **[nvidia-kernel-oot]** - Updated patches to include Upstream-Status (now mandatory).
+- **[KAS base configuration]** - Fetch bitbake tooling directly since poky has been deprecated.
+- **[README]** - Updated flashing instructions.
+- **[linux-noble-nvidia-tegra]** - Updated patches to include Upstream-Status (now mandatory).
+- **[Yocto recipes]** - Update ${WORKDIR} to ${UNPACKDIR} in all recipes to match updated Yocto syntax.
+
+### Removed
+
+- **[cuda-nvvm]** - intermediate representation compiler tool. Functionality moved into cuda-toolkit and libnvvm.
+- **[libcudla]** - Deep Learning Accelerator library. Functionality moved into cuda-toolkit or cuda-libraries.
+- **[libnvvpi3]** - Vision Programming Interface. Bumped to libnvvpi4.
+- **[nvidia-docker]**- Deprecated in favour of standard docker packages.
+- **[tegra-libraries-dla-compiler]** - DLA (Deep Learning Accelerator) offline compiler. Moved into TensorRT.
+- **[tegra-nvphs, tegra-nvphs-base]** - NVIDIA Power Hinting Service. Deprecated.
+- **[tegra-nvs-base, tegra-nvs-service]** - NVIDIA embedded sensor HAL daemon. Deprecated.
+- **[tensorrt-core]** - Refactored to choice of either tensorrt-lean or tensorrt (full). Including tensorrt as replacement.
+- **[cuda-compat]** - Not required since Yocto generates an SDK with the same version of CUDA.
+
+### Added
+
+- **[cw-flash-emmc]** - Flashing script to replace functionality of deprecated doflash.sh script.
+- **[argus-samples]** - libargus samples.
+- **[libnvvm]** - NVIDIA virtual machine compiler libraries.
+- **[jetson-sipl-api]** - NVIDIA’s Sensor Input Processing Library (SIPL) for Jetson Linux platforms.
+- **[tegra-container-passthrough]** - Container runtime configurations for Yocto filesystems.
+- **[tegra-cmake-overrides]** - CMake compatibility fixes.
+- **[tegra-eeprom-tool]** - Jetson EEPROM inspection tool.
+- **[tegra-libraries-adaruntime]** - CUDA and Tensor runtime for ADA. Equivalent to nvidia-l4t-adaruntime package.
+- **[tegra-libraries-camera]** - Userspace interface for camera processing. Equivalent to nvidia-l4t-camera.
+- **[tegra-libraries-gbm-backend]** - NVIDIA Generic Buffer Management (GBM) API.
+- **[tegra-libraries-openwfd]** - NVIDIA implementation of Khronos OpenWFD (Open Windowing Foundation Display) standard.
+- **[tegra-libraries-vulkan]** - NVIDIA implementation a Vulkan compatible driver.
+- **[tegra-libraries-vulkan-sc]** - NVIDIA implementation safety-critical Vulkan API.
+- **[tegra-libraries-vulkan-sc-core]** - NVIDIA implementation safety-critical Vulkan API.
+- **[tegra-nvsci-headers]** - NVIDIA’s NvSci (NVIDIA Software Communication Interface).
+- **[zstd]** - lossless data compression utility.
+
 ## 2026.10.29 2.1.8
 
 ### Fixed
@@ -15,7 +56,6 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - nvidia-kernel-oot - Enable UARTs 2, 4, and 5.
-
 ## 2026.09.29 2.1.7
 
 ### Fixed

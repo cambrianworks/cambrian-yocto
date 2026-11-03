@@ -1,6 +1,28 @@
+Upstream-Status: Inappropriate [Platform specialisation]
+
 --- a/hardware/nvidia/t23x/nv-public/tegra234.dtsi
 +++ b/hardware/nvidia/t23x/nv-public/tegra234.dtsi
-@@ -2769,14 +2769,18 @@
+
+@@ -2758,25 +2758,33 @@
+ 		};
+ 
+ 		uarta: serial@3100000 {
+-			compatible = "nvidia,tegra234-uart", "nvidia,tegra20-uart";
++			compatible = "nvidia,tegra194-hsuart";
+ 			reg = <0x0 0x03100000 0x0 0x10000>;
+ 			interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&bpmp TEGRA234_CLK_UARTA>;
++			clock-names = "serial";
+ 			resets = <&bpmp TEGRA234_RESET_UARTA>;
+-			dmas = <&gpcdma 8>, <&gpcdma 8>;
+-			dma-names = "rx", "tx";
+-			status = "disabled";
++			reset-names = "serial";
++			/delete-property/ dmas;
++			/delete-property/ dma-names;
++			/delete-property/ iommus;
++			/delete-property/ dma-coherant;
++			status = "okay";
  		};
  
  		uarte: serial@3140000 {
