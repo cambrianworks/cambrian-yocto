@@ -31,14 +31,11 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **[cw-flash-emmc]** - Flashing script to replace functionality of deprecated doflash.sh script.
-- **[argus-samples]** - libargus samples.
 - **[libnvvm]** - NVIDIA virtual machine compiler libraries.
-- **[jetson-sipl-api]** - NVIDIA’s Sensor Input Processing Library (SIPL) for Jetson Linux platforms.
 - **[tegra-container-passthrough]** - Container runtime configurations for Yocto filesystems.
 - **[tegra-cmake-overrides]** - CMake compatibility fixes.
 - **[tegra-eeprom-tool]** - Jetson EEPROM inspection tool.
 - **[tegra-libraries-adaruntime]** - CUDA and Tensor runtime for ADA. Equivalent to nvidia-l4t-adaruntime package.
-- **[tegra-libraries-camera]** - Userspace interface for camera processing. Equivalent to nvidia-l4t-camera.
 - **[tegra-libraries-gbm-backend]** - NVIDIA Generic Buffer Management (GBM) API.
 - **[tegra-libraries-openwfd]** - NVIDIA implementation of Khronos OpenWFD (Open Windowing Foundation Display) standard.
 - **[tegra-libraries-vulkan]** - NVIDIA implementation a Vulkan compatible driver.

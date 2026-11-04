@@ -2,9 +2,8 @@ TEGRA_BOARDSKU ?= "0008"
 TEGRA_BUPGEN_SPECS ?= "fab=500;boardsku=0008;boardrev=;chipsku=00:00:00:90;bup_type=bl \
                        fab=500;boardsku=0008;boardrev=;bup_type=kernel"
 
-EMMC_SIZE ?= "63652757504"
 ROOTFSPART_SIZE_DEFAULT ?= "59055800320"
-EMMC_BCT ?= "tegra234-p3701-0008-sdram-l4t.dts"
+EMC_BCT ?= "tegra234-p3701-0008-sdram-l4t.dts"
 PARTITION_LAYOUT_TEMPLATE_DEFAULT ?= "flash_t234_qspi_sdmmc_industrial.xml"
 TEGRA_AUDIO_DEVICE ?= "tegra-ape"
 TNSPEC_BOOTDEV = "mmcblk0p1"

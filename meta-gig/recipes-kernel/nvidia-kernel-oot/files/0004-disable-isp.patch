@@ -1,7 +1,7 @@
 Upstream-Status: Inappropriate [Platform specialisation]
 
 --- a/hardware/nvidia/t23x/nv-public/nv-soc/tegra234-soc-camera.dtsi
-+++ a/hardware/nvidia/t23x/nv-public/nv-soc/tegra234-soc-camera.dtsi
++++ b/hardware/nvidia/t23x/nv-public/nv-soc/tegra234-soc-camera.dtsi
 @@ -82,7 +82,7 @@
  
  				iommus = <&smmu_niso1 TEGRA234_SID_ISP>;

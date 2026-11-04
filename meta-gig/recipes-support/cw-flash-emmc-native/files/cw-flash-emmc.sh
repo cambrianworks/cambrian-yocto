@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Terminate script immediately if a failure is encountered.
+# -e: Exit on error.
+# -u: Exit if an unitialised variable is used.
+# -o pipefail: Exit if any command in a pipeline fails.
+set -euo pipefail
+
 ###############################################################################
 #
 # Usage:

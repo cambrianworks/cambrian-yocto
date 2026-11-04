@@ -1,5 +1,5 @@
 Upstream-Status: Inappropriate [Uses extlinux.conf to resolve bug where block
-device detection inteferes with loading rootfs from the correct storage device.
+device detection interferes with loading rootfs from the correct storage device.
 Other solutions may be viable and others may be used by meta-tegra in future.]
 
 --- a/init-boot.sh

@@ -103,7 +103,7 @@ create_partition_table() {
 create_raw_partition() {
     # When creating a bootable Jetson drive, nvidia doesn't use paritions with
     # standard file systems (with some exceptions such as rootfs and efi, where
-    # other standards compel them). Instead, parititions are defined to reserve
+    # other standards compel them). Instead, partitions are defined to reserve
     # space but data is written directly as raw binary data (e.g., kernels,
     # DTBs etc).
 

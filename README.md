@@ -86,7 +86,7 @@ kas-container shell kas/gigrouter-kas-config.yml -c "bitbake -c cleansstate tegr
 
 ## Flashing
 
-The output image is found within the `build` directory under: `./build/tmp/deploy/images/gigrouter/cambrian-image-gigrouter.rootfs-[timestamp].tegraflash.zst
+The output image is found within the `build` directory under: `./build/tmp/deploy/images/gigrouter/cambrian-image-gigrouter.rootfs-[timestamp].tegraflash-tar.zst
 
 1. Extract to a host machine connected to the target hardware.
 
@@ -130,5 +130,5 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) document.
 
 ## Further reading
 
-[nvidia Jetson developer guide](https://docs.nvidia.com/jetson/archives/r36.5/DeveloperGuide/index.html)
+[nvidia Jetson developer guide](https://docs.nvidia.com/jetson/archives/r39.2.1/DeveloperGuide/index.html)
 

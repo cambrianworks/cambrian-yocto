@@ -59,7 +59,7 @@ repos:
     url: https://github.com/OE4T/tegra-demo-distro
     path: repos/tegra-demo-distro
     branch: wrynose
-    # Commit date: Sat Oct 3 06:53:07 202
+    # Commit date: Sat Oct 3 06:53:07 2026
     commit: 6eab4529e8ba83231214677dc70f504ca1cb326f
     layers:
       layers/meta-tegra-support:
