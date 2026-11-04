@@ -7,10 +7,11 @@ PR = "r0"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI = " \
-    file://condition.conf \
+    file://settings.conf \
 "
 
 TOUCH_FILE = "/etc/cw-interactive-ttyTHS1"
+S = "${UNPACKDIR}"
 
 inherit systemd
 inherit allarch
@@ -27,9 +28,9 @@ do_install() {
 
     # Inhibit starting the service unless a touch file has been added
     # so that the support is optional to the end user
-    if [ -f "${WORKDIR}/condition.conf" ]; then
-        sed "s|@TOUCH_FILE@|${TOUCH_FILE}|g" ${WORKDIR}/condition.conf \
-            > ${D}${systemd_system_unitdir}/serial-getty@ttyTHS1.service.d/condition.conf
+    if [ -f "${UNPACKDIR}/settings.conf" ]; then
+        sed "s|@TOUCH_FILE@|${TOUCH_FILE}|g" ${S}/settings.conf \
+            > ${D}${systemd_system_unitdir}/serial-getty@ttyTHS1.service.d/settings.conf
     fi
 }
 

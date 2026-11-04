@@ -14,10 +14,11 @@ inherit useradd
 
 USERADD_PACKAGES = "${PN}"
 GROUPADD_PARAM:${PN} = "-r gpio"
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}${sysconfdir}/udev/rules.d
-    install -m 0644 ${WORKDIR}/99-gpio.rules ${D}${sysconfdir}/udev/rules.d/
+    install -m 0644 ${S}/99-gpio.rules ${D}${sysconfdir}/udev/rules.d/
 }
 
 FILES:${PN} += "${sysconfdir}/udev/rules.d/99-gpio.rules"

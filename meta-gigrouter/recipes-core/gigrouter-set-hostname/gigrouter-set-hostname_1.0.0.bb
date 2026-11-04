@@ -15,13 +15,14 @@ inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "gigrouter-set-hostname.service"
 SYSTEMD_AUTO_ENABLE = "enable"
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}${sbindir}
-    install -m 0755 ${WORKDIR}/gigrouter-set-hostname.sh ${D}${sbindir}/gigrouter-set-hostname.sh
+    install -m 0755 ${S}/gigrouter-set-hostname.sh ${D}${sbindir}/gigrouter-set-hostname.sh
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/gigrouter-set-hostname.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${S}/gigrouter-set-hostname.service ${D}${systemd_unitdir}/system/
 }
 
 RDEPENDS:${PN} += "bash coreutils"

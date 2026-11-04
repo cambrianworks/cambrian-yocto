@@ -9,9 +9,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://apt-utils.txt \
 "
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}/opt/dummy
-    install -m 0755 ${WORKDIR}/apt-utils.txt ${D}/opt/dummy/apt-utils.txt
+    install -m 0755 ${S}/apt-utils.txt ${D}/opt/dummy/apt-utils.txt
 }
 FILES:${PN} += "/opt/dummy/apt-utils.txt"

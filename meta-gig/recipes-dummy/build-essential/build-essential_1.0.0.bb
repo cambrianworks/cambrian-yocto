@@ -9,9 +9,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://build-essential.txt \
 "
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}/opt/dummy
-    install -m 0755 ${WORKDIR}/build-essential.txt ${D}/opt/dummy/build-essential.txt
+    install -m 0755 ${S}/build-essential.txt ${D}/opt/dummy/build-essential.txt
 }
 FILES:${PN} += "/opt/dummy/build-essential.txt"

@@ -18,6 +18,8 @@ SRC_URI += " \
     file://system-binaries.sh \
 "
 
+S = "${UNPACKDIR}"
+
 # SHA hash of the gigrouter password
 PASSWORD = "\$6\$sBhZXQYn.XIcQLOn\$CsBLVpDeIlq8iNbF7VGCj5Yqp/P1v3nejonFeh9zPYxvUyhKOVHy7b7YH7YH3g4wQV8uaDh.C1lsRlZIxR2qH1"
 
@@ -32,6 +34,6 @@ USERADD_PARAM:${PN} = "--create-home \
 
 do_install:append() {
     install -d ${D}${sysconfdir}/profile.d
-    install -m 0755 ${WORKDIR}/system-binaries.sh ${D}${sysconfdir}/profile.d/system-binaries.sh
+    install -m 0755 ${S}/system-binaries.sh ${D}${sysconfdir}/profile.d/system-binaries.sh
 }
 FILES:${PN} += "${sysconfdir}/profile.d/system-binaries.sh"

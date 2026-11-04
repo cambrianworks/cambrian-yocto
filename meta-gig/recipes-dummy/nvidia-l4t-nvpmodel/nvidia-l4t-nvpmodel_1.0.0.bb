@@ -9,9 +9,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://nvidia-l4t-nvpmodel.txt \
 "
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}/opt/dummy
-    install -m 0755 ${WORKDIR}/nvidia-l4t-nvpmodel.txt ${D}/opt/dummy/nvidia-l4t-nvpmodel.txt
+    install -m 0755 ${S}/nvidia-l4t-nvpmodel.txt ${D}/opt/dummy/nvidia-l4t-nvpmodel.txt
 }
 FILES:${PN} += "/opt/dummy/nvidia-l4t-nvpmodel.txt"

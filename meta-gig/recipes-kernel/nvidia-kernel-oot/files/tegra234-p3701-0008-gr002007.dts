@@ -110,16 +110,6 @@
 		};
 	};
 
-	// Resolve DMA issue on the THS (Tegra High-Speed) UART
-	// introduced in JetPack 6.2.2. May be removed in future releases:
-	// https://forums.developer.nvidia.com/t/dma-on-dev-ttyths1-corrupts-receiving-data/369191
-	fragment@4 {
-		target-path = "/bus@0/serial@3100000";
-		__overlay__ {
-			iommus = <&smmu_niso0 TEGRA234_SID_GPCDMA>;
-		};
-	};
-
 	// Set PCIe interface to Gen2
 	fragment@5 {
 		target-path = "/bus@0/pcie@141a0000";
@@ -199,13 +189,118 @@
 	// UART5. It's disabled here so that UART5 can operate
 	// as a data port.
 	fragment@10 {
-		target-path = "/";
+		target-path = "/bus@0/serial@31d0000";
 		__overlay__ {
-			bus@0 {
-				serial@31d0000 {
-					status = "disabled";
-				};
+			status = "disabled";
+		};
+	};
+
+    // Enable GICv2m interface so that PCIe can dispatch MSIs
+    // to multiple SPIs.
+	fragment@11 {
+		target = <&gic>;
+		__overlay__ {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges;
+
+			gic_v2m: v2m@f410000 {
+				compatible = "arm,gic-v2m-frame";
+				msi-controller;
+				#msi-cells = <1>;
+				reg = <0x0 0x0f410000 0x0 0x00010000>,
+				      <0x0 0x54000000 0x0 0x04000000>;
+				reg-names = "gic_base", "msi_base";
+				arm,msi-base-spi = <608>;
+				arm,msi-num-spis = <352>;
 			};
 		};
 	};
+
+	fragment@12 {
+		target-path = "/bus@0/pcie@140c0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 358 0x4>;
+		};
+	};
+
+	fragment@13 {
+		target-path = "/bus@0/pcie@14120000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 47 0x4>;
+		};
+	};
+
+	fragment@14 {
+		target-path = "/bus@0/pcie@14160000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 51 0x4>;
+		};
+	};
+
+	fragment@15 {
+		target-path = "/bus@0/pcie@141a0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 53 0x4>;
+		};
+	};
+
+	fragment@16 {
+		target-path = "/bus@0/pcie@141e0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 354 0x4>;
+		};
+	};
+
+	fragment@17 {
+		target-path = "/bus@0/pcie@140a0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 356 0x4>;
+		};
+	};
+
+	fragment@18 {
+		target-path = "/bus@0/pcie@140e0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 360 0x4>;
+		};
+	};
+
+	fragment@19 {
+		target-path = "/bus@0/pcie@14100000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 45 0x4>;
+		};
+	};
+
+	fragment@20 {
+		target-path = "/bus@0/pcie@14140000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 49 0x4>;
+		};
+	};
+
+	fragment@21 {
+		target-path = "/bus@0/pcie@14180000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 72 0x4>;
+		};
+	};
+
+	fragment@22 {
+		target-path = "/bus@0/pcie@141c0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 352 0x4>;
+		};
+	};
+
+	fragment@23 {
+		target-path = "/bus@0/pcie@141e0000";
+		__overlay__ {
+			msi-parent = <&gic_v2m 0x08>;
+			msi-map = <0x0 &gic_v2m 0x08 0x1000>;
+		};
+	};
+
+
 };
