@@ -11,11 +11,15 @@ set -euo pipefail
 # Provisions a secondary NVMe drive as a bootable drive.
 #
 # Usage:
-#    ./cw-drive-setup.sh -d|--drive <drive> -i|--image <image>
+#    ./cw-drive-setup.sh -d|--drive <drive|auto> -i|--image <image>
 #
-#        -d|--drive      Target drive to reformat and write. Defaults to nvme0n1.
+#        -d|--drive      Target drive to reformat and write, e.g. nvme0n1 or
+#                        nvme1n1. "auto" selects the drive by its PCIe
+#                        location: the NVMe drive behind a PCIe switch if
+#                        there is one (GigRouter), otherwise the only NVMe
+#                        drive (GigCompute). Defaults to nvme0n1.
 #        -h|--help       Display this usage.
-#        -i|--image      Image to write to rootfs partition. Defaults to system.img."
+#        -i|--image      Image to write to rootfs partition. Defaults to system.img.
 #
 ###############################################################################
 
@@ -114,6 +118,14 @@ create_raw_partition() {
     parted /dev/$1 --script set $partition_number msftdata on && partprobe /dev/$1 && udevadm settle
 }
 
+describe_drive() {
+    # Model and serial number, e.g. "Samsung SSD 980 PRO 2TB S6B0NU0W519862H"
+    local model="" serial=""
+    read -r model 2>/dev/null <"/sys/block/$1/device/model" || true
+    read -r serial 2>/dev/null <"/sys/block/$1/device/serial" || true
+    echo "$model $serial"
+}
+
 duplicate_partition() {
     msg "Duplicating partition: $2"
     source_partition=$(parted -m /dev/mmcblk0 -m print | grep ":$2:" | cut -d: -f1)
@@ -130,27 +142,77 @@ duplicate_partition() {
     dd if=/dev/mmcblk0p$source_partition of=/dev/$1p$dest_partition bs=1M conv=fsync
 }
 
+list_nvme_drives() {
+    local dev name
+    for dev in /sys/block/nvme*; do
+        name=${dev##*/}
+        if [[ $name =~ ^nvme[0-9]+n[0-9]+$ ]]; then
+            echo "$name"
+        fi
+    done
+}
+
 msg() {
     echo "[$(date +%Y-%m-%dT%H:%M:%S%z)]: $@" >&2
 }
 
+nvme_pci_depth() {
+    # Number of PCI functions from the root port down to the drive. A drive
+    # wired straight to a Tegra root port has 2 (root port, drive); one on
+    # the far side of a PCIe switch has 4 (root port, switch upstream port,
+    # switch downstream port, drive)
+    local component depth=0
+    local -a components
+    IFS=/ read -ra components <<<"$(nvme_pci_function "$1")"
+    for component in "${components[@]}"; do
+        if [[ $component =~ ^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7]$ ]]; then
+            depth=$((depth + 1))
+        fi
+    done
+    echo "$depth"
+}
+
+nvme_pci_function() {
+    readlink -f "/sys/block/$1/device/device" 2>/dev/null || true
+}
+
 substitute_extlinux_conf() {
-    msg "Updating extlinux.conf on partition $2 of $1"
     app_partition=$(parted -m /dev/$1 -m print | grep ":$2:" | cut -d: -f1)
+    app_device=/dev/$1p$app_partition
+
+    # NVMe names (nvme0n1, nvme1n1, ...) follow driver probe order, which is
+    # may not be  stable across boots when more than one NVMe drive is present
+    # so refer to the rootfs by its GPT partition UUID instead
+    if [[ "$1" == mmcblk* ]]; then
+        root_spec=$app_device
+    else
+        part_uuid=$(lsblk -dno PARTUUID "$app_device")
+        if [[ -z "$part_uuid" ]]; then
+            msg "Error: unable to read PARTUUID of $app_device"
+            exit 1
+        fi
+        root_spec="PARTUUID=$part_uuid"
+    fi
+
+    msg "Updating extlinux.conf on partition $2 of $1: root=$root_spec"
     if [[ ! -d /tmp/app ]]; then
         mkdir /tmp/app
     fi
-    mount /dev/$1p$app_partition /tmp/app
-    sed -i "s/root=\/dev\/mmcblk0p1/root=\/dev\/$1p$app_partition/g" /tmp/app/boot/extlinux/extlinux.conf
+    mount $app_device /tmp/app
+    sed -i "s#\([[:space:]]\)root=[^[:space:]]*#\1root=$root_spec#g" /tmp/app/boot/extlinux/extlinux.conf
     umount /tmp/app
     rm -r /tmp/app
 }
 
 usage() {
     msg "Usage:
-    ./cw-drive-setup.sh -d|--drive <drive> -i|--image <image>
+    ./cw-drive-setup.sh -d|--drive <drive|auto> -i|--image <image>
 
-        -d|--drive      Target drive to reformat and write. Defaults to nvme0n1.
+        -d|--drive      Target drive to reformat and write, e.g. nvme0n1 or
+                        nvme1n1. \"auto\" selects the drive by its PCIe
+                        location: the NVMe drive behind a PCIe switch if
+                        there is one (GigRouter), otherwise the only NVMe
+                        drive (GigCompute). Defaults to nvme0n1.
         -h|--help       Display this usage.
         -i|--image      Image to write to rootfs partition. Defaults to system.img."
 }
@@ -181,6 +243,50 @@ partition_drive() {
     done
 }
 
+resolve_auto_drive() {
+    # Choose the drive by its location on the PCIe bus, not by name: nvme0 and
+    # nvme1 follow driver probe order. Hardware configurations:
+    #   1) A GigRouter's rootfs drives is behind the PCIe switch (the
+    #   other drive is on a root port).
+    #   2) A GigCompute has a single drive.
+    local d depth pci location
+    local -a drives=() candidates=()
+    mapfile -t drives < <(list_nvme_drives)
+
+    msg "NVMe drives found: ${#drives[@]}"
+    for d in "${drives[@]}"; do
+        depth=$(nvme_pci_depth "$d")
+        pci=$(nvme_pci_function "$d")
+        case $depth in
+        0) location="unknown PCIe path" ;;
+        1 | 2) location="on root port" ;;
+        *)
+            location="behind PCIe switch"
+            candidates+=("$d")
+            ;;
+        esac
+        msg "  $d  ${pci##*/}  $location  $(describe_drive "$d")"
+    done
+
+    if [[ ${#drives[@]} -eq 0 ]]; then
+        msg "Error: no NVMe drive found"
+        exit 1
+    fi
+
+    # No drive behind a switch: use the only drive present.
+    if [[ ${#candidates[@]} -eq 0 ]]; then
+        candidates=("${drives[@]}")
+    fi
+
+    if [[ ${#candidates[@]} -ne 1 ]]; then
+        msg "Error: can't choose a drive automatically: expected one NVMe drive behind a PCIe switch, or a single NVMe drive. Specify the drive with -d."
+        exit 1
+    fi
+
+    msg "Auto-selected drive: ${candidates[0]}"
+    echo "${candidates[0]}"
+}
+
 stop_k3s() {
     if systemctl is-active k3s; then
         msg "k3s is running, stopping"
@@ -197,6 +303,13 @@ unmount_drive() {
 update_extlinux_conf() {
     substitute_extlinux_conf $1 "APP"
     substitute_extlinux_conf $1 "APP_b"
+}
+
+validate_drive() {
+    if [[ ! $1 =~ ^nvme[0-9]+n[0-9]+$ || ! -e /sys/block/$1 ]]; then
+        msg "Error: '$1' is not an NVMe drive on this system. Found: $(list_nvme_drives | tr '\n' ' ')(or use -d auto)"
+        exit 1
+    fi
 }
 
 wipe_drive() {
@@ -224,16 +337,16 @@ image=system.img
 while [[ $# -gt 0 ]]; do
     case $1 in
     -d | --drive)
-        drive="$2"
-        shift 2
+        drive="${2:-}"
+        shift $(($# > 1 ? 2 : 1))
         ;;
     -h | --help)
         usage
         exit 0
         ;;
     -i | --image)
-        image="$2"
-        shift 2
+        image="${2:-}"
+        shift $(($# > 1 ? 2 : 1))
         ;;
     *)
         shift 1
@@ -241,13 +354,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+if [[ "$drive" == "auto" ]]; then
+    drive=$(resolve_auto_drive)
+else
+    validate_drive "$drive"
+fi
+
 root_device=$(findmnt -nvo SOURCE /)
 if [[ "$root_device" == *"$drive"* ]]; then
     msg "Error: cannot provision a drive hosting the currently mounted rootfs: $root_device"
     exit 1
 fi
 
-msg "Setting up drive: $drive, using image: $image"
+msg "Setting up drive: $drive ($(describe_drive "$drive")), using image: $image"
 read -p "Press ENTER to continue (c to cancel) ... " entry
 if [ ! -z $entry ]; then
     if [ $entry = "c" ]; then

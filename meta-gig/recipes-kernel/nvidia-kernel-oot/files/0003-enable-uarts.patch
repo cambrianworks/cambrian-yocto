@@ -21,7 +21,7 @@ Upstream-Status: Inappropriate [Platform specialisation]
 +			/delete-property/ dmas;
 +			/delete-property/ dma-names;
 +			/delete-property/ iommus;
-+			/delete-property/ dma-coherant;
++			/delete-property/ dma-coherent;
 +			status = "okay";
  		};
  
@@ -40,7 +40,7 @@ Upstream-Status: Inappropriate [Platform specialisation]
 +			/delete-property/ dmas;
 +			/delete-property/ dma-names;
 +			/delete-property/ iommus;
-+			/delete-property/ dma-coherant;
++			/delete-property/ dma-coherent;
 +			status = "okay";
  		};
  

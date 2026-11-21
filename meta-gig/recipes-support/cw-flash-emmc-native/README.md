@@ -8,9 +8,9 @@ In older Yocto branches (e.g., scarthgap) meta-tegra would provide the `doflash.
 ## Usage
 
 ```
-```
-./cw-flash-emmc.sh
-```
-```
-```
+./cw-flash-emmc.sh (optional) -n|--no-flash
+
+    -n | --no-flash Creates an ext4.img file of the rootfs (cambrian-image.ext4.img)
+                    which can be used with cw-drive-setup.sh but doesn't flash
+                    the system."
 ```

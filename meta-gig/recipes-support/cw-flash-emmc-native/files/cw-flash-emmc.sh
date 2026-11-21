@@ -9,7 +9,7 @@ set -euo pipefail
 ###############################################################################
 #
 # Usage:
-# sudo ./cw-flash-emmc.sh (optional)-n|--no-flash
+# sudo ./cw-flash-emmc.sh (optional) -n|--no-flash
 #
 #   -n | --no-flash Creates an ext4.img file of the rootfs (cambrian-image.ext4.img)
 #                   which can be used with cw-drive-setup.sh but doesn't flash

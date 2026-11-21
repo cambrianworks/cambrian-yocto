@@ -1,24 +1,25 @@
-Upstream-Status: Inappropriate [Uses extlinux.conf to resolve bug where block
-device detection interferes with loading rootfs from the correct storage device.
-Other solutions may be viable and others may be used by meta-tegra in future.]
+Upstream-Status: Inappropriate [Cambrian-specific: honour root= from extlinux.conf
+ahead of the build-time boot drive, falls back to platform-preboot if
+the requested root never appears instead of waiting forever.]
 
 --- a/init-boot.sh
 +++ b/init-boot.sh
-@@ -17,28 +17,31 @@
+@@ -17,28 +17,56 @@
  wait=""
  fstype="auto"
  
 -[ ! -f /etc/platform-preboot ] || . /etc/platform-preboot
++rootspec=""
 +for bootarg in `cat /proc/cmdline`; do
 +    case "$bootarg" in
-+        root=*) rootdev="${bootarg##root=}" ;;
++        root=*) rootspec="${bootarg##root=}" ;;
 +        ro) opt="ro" ;;
 +        rootwait) wait="yes" ;;
 +        rootfstype=*) fstype="${bootarg##rootfstype=}" ;;
 +    esac
 +done
  
- if [ -z "$rootdev" ]; then
+-if [ -z "$rootdev" ]; then
 -    for bootarg in `cat /proc/cmdline`; do
 -        case "$bootarg" in
 -            root=*) rootdev="${bootarg##root=}" ;;
@@ -27,19 +28,49 @@ Other solutions may be viable and others may be used by meta-tegra in future.]
 -            rootfstype=*) fstype="${bootarg##rootfstype=}" ;;
 -        esac
 -    done
-+    echo "rootfs not specified in cmd args" > /dev/ttyTCU0
-+    [ ! -f /etc/platform-preboot ] || . /etc/platform-preboot
++# Turn a root= value into a block device node. Kernel names such as
++# /dev/nvme1n1p1 are not stable when there is more than one NVMe drive:
++# the nvme driver probes controllers in parallel, so nvme0/nvme1 can swap
++# between boots. Tag forms (PARTUUID= etc.) are resolved with blkid, which
++# tegra-minimal-init already pulls into this initramfs.
++resolve_root() {
++    case "$1" in
++        PARTUUID=*|PARTLABEL=*|UUID=*|LABEL=*)
++            blkid -c /dev/null -l -o device -t "$1" 2>/dev/null ;;
++        *)
++            echo "$1" ;;
++    esac
++}
++
++if [ -n "$rootspec" ]; then
++    echo "rootfs from cmd args: ${rootspec}" > /dev/ttyTCU0
++    rootdev=$(resolve_root "$rootspec")
++    if [ -n "$wait" ] && [ ! -b "${rootdev}" ]; then
++        echo "Waiting for ${rootspec}..." > /dev/ttyTCU0
++        for count in $(seq 1 60); do
++            rootdev=$(resolve_root "$rootspec")
++            [ -b "${rootdev}" ] && break
++            sleep 0.5
++        done
++    fi
++    if [ ! -b "${rootdev}" ]; then
++        # Don't hang forever on a missing drive: fall back to the
++        # platform default (APP/APP_b on the build-time boot drive).
++        echo "${rootspec} not found, falling back to platform default" > /dev/ttyTCU0
++        rootdev=""
++    fi
 +else
-+    echo "rootfs from cmd args: ${rootdev}"> /dev/ttyTCU0
++    echo "rootfs not specified in cmd args" > /dev/ttyTCU0
  fi
  
- if [ -n "$wait" -a ! -b "${rootdev}" ]; then
+-if [ -n "$wait" -a ! -b "${rootdev}" ]; then
 -    echo "Waiting for ${rootdev}..."
-+    echo "Waiting for ${rootdev}..." > /dev/ttyTCU0
-     while true; do
-         test -b "${rootdev}" && break
-         sleep 0.1
-     done
+-    while true; do
+-        test -b "${rootdev}" && break
+-        sleep 0.1
+-    done
++if [ -z "$rootdev" ]; then
++    [ ! -f /etc/platform-preboot ] || . /etc/platform-preboot
  fi
  
 -echo "Mounting ${rootdev}..."
@@ -47,7 +78,7 @@ Other solutions may be viable and others may be used by meta-tegra in future.]
  [ -d /mnt ] || mkdir -p /mnt
  count=0
  while [ $count -lt 5 ]; do
-@@ -52,7 +55,7 @@
+@@ -52,7 +80,7 @@
  
  [ ! -f /etc/platform-pre-switchroot ] || . /etc/platform-pre-switchroot
  
