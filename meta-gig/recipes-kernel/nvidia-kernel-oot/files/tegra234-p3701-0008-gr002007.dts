@@ -8,6 +8,16 @@
 #include <dt-bindings/reset/tegra234-reset.h>
 
 / {
+	///////////////////////////////////////////////////////////////////////////
+	//
+	// Networking devices
+	//
+	// Most networking functionality is provided by external controllers
+	// attached to the system's PCIe buses (see below). To provide an additional
+	// port the RGMII port drives a 1GB Ethernet controller as well.
+	//
+	///////////////////////////////////////////////////////////////////////////
+
 	fragment@0 {
 		target-path = "/bus@0/ethernet@6800000";
 		__overlay__ {
@@ -89,78 +99,60 @@
 		};
 	};
 
+	///////////////////////////////////////////////////////////////////////////
+	//
+	// PPS inputs
+	//
+	// GPIO8 and GPIO9 are used as PPS inputs. N.B., by coincidence, GPIO8's 
+	// pin number on gpio_aon is 9, while GPIO9's pin number on gpio_aon is 8.
+	// This is correct and not an accidental inversion.
+	//
+	///////////////////////////////////////////////////////////////////////////
+
+	// Enable PPS pin on GPIO8
 	fragment@2 {
-		target-path = "/bus@0/pcie@14180000";
-		__overlay__ {
-			status = "okay";
-			phys = <&p2u_hsio_0>;
-			phy-names = "p2u-0";
-		};
-	};
-
-	fragment@3 {
-		target-path = "/bus@0/pcie@141e0000";
-		__overlay__ {
-			status = "okay";
-			num-lanes = <8>;
-			phys = <&p2u_gbe_0>, <&p2u_gbe_1>, <&p2u_gbe_2>, <&p2u_gbe_3>, 
-			       <&p2u_gbe_4>, <&p2u_gbe_5>, <&p2u_gbe_6>, <&p2u_gbe_7>;
-			phy-names = "p2u-0", "p2u-1", "p2u-2", "p2u-3", 
-				    "p2u-4", "p2u-5", "p2u-6", "p2u-7";
-		};
-	};
-
-	// Resolve DMA issue on the THS (Tegra High-Speed) UART
-	// introduced in JetPack 6.2.2. May be removed in future releases:
-	// https://forums.developer.nvidia.com/t/dma-on-dev-ttyths1-corrupts-receiving-data/369191
-	fragment@4 {
-		target-path = "/bus@0/serial@3100000";
-		__overlay__ {
-			iommus = <&smmu_niso0 TEGRA234_SID_GPCDMA>;
-		};
-	};
-
-	// Set PCIe interface to Gen2
-	fragment@5 {
-		target-path = "/bus@0/pcie@141a0000";
-		__overlay__ {
-			max-link-speed = <2>;
-			nvidia,max-speed = <2>;
-		};
-	};
-
-	// Enable PPS pin
-	fragment@6 {
 		target-path = "/";
 		__overlay__ {
 			pps0: pps-gpio-0 {
 				status = "okay";
 				compatible = "pps-gpio";
-				// GPIO8:
 				gpios = <&gpio_aon 9 0>;
 				assert-rising-edge;
 			};
 		};
 	};
 
-	// Enable PPS pin
-	fragment@7 {
+	// Enable PPS pin on GPIO9
+	fragment@3 {
 		target-path = "/";
 		__overlay__ {
 			pps1: pps-gpio-1 {
 				status = "okay";
 				compatible = "pps-gpio";
-				// GPIO9:
 				gpios = <&gpio_aon 8 0>;
 				assert-rising-edge;
 			};
 		};
 	};
 
+	///////////////////////////////////////////////////////////////////////////
+	//
+	// Serial UART interfaces
+	//
+	// UART4 isn't included in the default device tree so it's re-added here.
+	// UART2 is included but lacks an alias in line with the others so it's
+	// added to ensure it'll correctly enumerate.
+	// serial@31d0000 is a hardware debug port which replicates the behaviour
+	// of the main debug port. However, since we already have the main port, and
+	// it shares pinmux with UART5, it's disabled to enable UART5 as a user
+	// controllable data port.
+	//
+	///////////////////////////////////////////////////////////////////////////
+
 	// UART4 was removed from the underlying system device trees.
 	// It's enabled here by reintroducing the entire node.
 	// Run in PIO mode rather than using DMA.
-	fragment@8 {
+	fragment@4 {
 		target-path = "/";
 		__overlay__ {
 			aliases {
@@ -178,7 +170,7 @@
 					/delete-property/ dmas;
 					/delete-property/ dma-names;
 					/delete-property/ iommus;
-					/delete-property/ dma-coherant;
+					/delete-property/ dma-coherent;
 					status = "okay";
 				};
 			};
@@ -186,7 +178,7 @@
 	};
 
 	// Ensure UART2 is aliased to ttyTHS4 at runtime
-	fragment@9 {
+	fragment@5 {
 		target-path = "/";
 		__overlay__ {
 			aliases {
@@ -198,14 +190,151 @@
 	// This represents a debug UART which can interfere with
 	// UART5. It's disabled here so that UART5 can operate
 	// as a data port.
-	fragment@10 {
-		target-path = "/";
+	fragment@6 {
+		target-path = "/bus@0/serial@31d0000";
 		__overlay__ {
-			bus@0 {
-				serial@31d0000 {
-					status = "disabled";
-				};
+			status = "disabled";
+		};
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	//
+	// PCIe ports
+	//
+	///////////////////////////////////////////////////////////////////////////
+
+	// Enable GICv2m interface so that PCIe can dispatch MSIs
+	// to multiple SPIs.
+	fragment@7 {
+		target = <&gic>;
+		__overlay__ {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges;
+
+			gic_v2m: v2m@f410000 {
+				compatible = "arm,gic-v2m-frame";
+				msi-controller;
+				#msi-cells = <1>;
+				reg = <0x0 0x0f410000 0x0 0x00010000>,
+				      <0x0 0x54000000 0x0 0x04000000>;
+				reg-names = "gic_base", "msi_base";
+				arm,msi-base-spi = <608>;
+				arm,msi-num-spis = <352>;
 			};
+		};
+	};
+
+	fragment@8 {
+		// C0: Hosts WGI120IT 1GB Ethernet controller
+		// Routed through GICv2m to allow for assigning CPU
+		// affinity to individual interrupt channels.
+		target-path = "/bus@0/pcie@14180000";
+		__overlay__ {
+			msi-parent = <&gic_v2m 0x12>;
+			msi-map = <0x0 &gic_v2m 0x12 0x1000>;
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 72 0x4>;
+			status = "okay";
+			phys = <&p2u_hsio_0>;
+			phy-names = "p2u-0";
+		};
+	};
+
+	fragment@9 {
+		// C7: Hosts X550-AT2 Dual 10G Ethernet controller.
+		// Routed through GICv2m to allow for assigning CPU
+		// affinity to individual interrupt channels.
+		target-path = "/bus@0/pcie@141e0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 354 0x4>;
+			msi-parent = <&gic_v2m 0x08>;
+			msi-map = <0x0 &gic_v2m 0x08 0x1000>;
+			status = "okay";
+			num-lanes = <8>;
+			phys = <&p2u_gbe_0>, <&p2u_gbe_1>, <&p2u_gbe_2>, <&p2u_gbe_3>, 
+			       <&p2u_gbe_4>, <&p2u_gbe_5>, <&p2u_gbe_6>, <&p2u_gbe_7>;
+			phy-names = "p2u-0", "p2u-1", "p2u-2", "p2u-3", 
+				    "p2u-4", "p2u-5", "p2u-6", "p2u-7";
+		};
+	};
+
+	fragment@10 {
+		// C5: Hosts connector to external panel which provides
+		// additional SSD and Ethernet port options. Some flakiness
+		// has been observed when running at Gen3 speeds so intentionally
+		// limit to Gen2 which is sufficient for the use-cases, but avoids
+		// periodic errors.
+		// Routed through GICv2m to allow for assigning CPU
+		// affinity to individual interrupt channels.
+		target-path = "/bus@0/pcie@141a0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 53 0x4>;
+			msi-parent = <&gic_v2m 0x14>;
+			msi-map = <0x0 &gic_v2m 0x14 0x1000>;
+			max-link-speed = <2>;
+			nvidia,max-speed = <2>;
+		};
+	};
+
+	fragment@11 {
+		// C1: Hosts WGI120IT 1GB Ethernet controller
+		// Routed through GICv2m to allow for assigning CPU
+		// affinity to individual interrupt channels.
+		target-path = "/bus@0/pcie@14100000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 45 0x4>;
+			msi-parent = <&gic_v2m 0x05>;
+			msi-map = <0x0 &gic_v2m 0x05 0x1000>;
+		};
+	};
+
+	fragment@12 {
+		target-path = "/bus@0/pcie@140c0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 358 0x4>;
+		};
+	};
+
+	fragment@13 {
+		target-path = "/bus@0/pcie@14120000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 47 0x4>;
+		};
+	};
+
+	fragment@14 {
+		target-path = "/bus@0/pcie@14160000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 51 0x4>;
+		};
+	};
+
+	fragment@15 {
+		target-path = "/bus@0/pcie@140a0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 356 0x4>;
+		};
+	};
+
+	fragment@16 {
+		target-path = "/bus@0/pcie@140e0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 360 0x4>;
+		};
+	};
+
+
+	fragment@17 {
+		target-path = "/bus@0/pcie@14140000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 49 0x4>;
+		};
+	};
+
+	fragment@18 {
+		target-path = "/bus@0/pcie@141c0000";
+		__overlay__ {
+			interrupt-map = <0x0 0x0 0x0 0x0 &gic 0x0 0x0 0x0 352 0x4>;
 		};
 	};
 };

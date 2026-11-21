@@ -10,7 +10,7 @@ When power is applied to the system the nvidia SOM will execute internal boot co
 
 For a device to be bootable it must host a fat32 formatted partition labeled "esp" containing an EFI boot binary. The EFI binary launches the next step of loading kernel and rootfs from the same device. If a serial console is connected to the system the boot process can be interrupted and the user can make a one time selection of the boot device manually through a menu selection. The same menu also allows for persistently changing boot device priority.
 
-![Exmaple boot flow](./img/boot-flow.png)
+![Example boot flow](./img/boot-flow.png)
 
 ## Partitioning
 

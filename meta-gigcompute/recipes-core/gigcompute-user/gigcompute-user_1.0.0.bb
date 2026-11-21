@@ -8,6 +8,7 @@ RDEPENDS:${PN} += " bash"
 
 inherit useradd
 
+S = "${UNPACKDIR}"
 USERADD_PACKAGES = "${PN}"
 
 # Provide a profile.d script which adds /usr/sbin to
@@ -32,6 +33,6 @@ USERADD_PARAM:${PN} = "--create-home \
 
 do_install:append() {
     install -d ${D}${sysconfdir}/profile.d
-    install -m 0755 ${WORKDIR}/system-binaries.sh ${D}${sysconfdir}/profile.d/system-binaries.sh
+    install -m 0755 ${S}/system-binaries.sh ${D}${sysconfdir}/profile.d/system-binaries.sh
 }
 FILES:${PN} += "${sysconfdir}/profile.d/system-binaries.sh"

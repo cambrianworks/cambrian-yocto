@@ -5,7 +5,7 @@ SRC_URI += " \
 
 do_install:append() {
     install -d ${D}${sysconfdir}/sudoers.d
-    install -m 0440 ${WORKDIR}/gigrouter-sudo ${D}${sysconfdir}/sudoers.d/gigrouter-sudo
+    install -m 0440 ${UNPACKDIR}/gigrouter-sudo ${D}${sysconfdir}/sudoers.d/gigrouter-sudo
 }
 
 FILES:${PN} += "${sysconfdir}/sudoers.d"

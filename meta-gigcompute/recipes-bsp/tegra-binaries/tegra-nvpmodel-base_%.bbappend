@@ -4,7 +4,7 @@ SRC_URI += " \
 "
 
 do_install:append() {
-    install -m 0440 ${WORKDIR}/nvpmodel_p3701_gigcompute.conf ${D}${sysconfdir}/nvpmodel.conf
+    install -m 0440 ${UNPACKDIR}/nvpmodel_p3701_gigcompute.conf ${D}${sysconfdir}/nvpmodel.conf
 }
 
 FILES:${PN} += "${sysconfdir}/nvpmodel.conf"

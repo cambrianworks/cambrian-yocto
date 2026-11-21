@@ -10,9 +10,11 @@ SRC_URI = " \
     file://cw-drive-setup.sh \
 "
 
+S = "${UNPACKDIR}"
+
 do_install() {
     install -d ${D}${sbindir}
-    install -m 0755 ${WORKDIR}/cw-drive-setup.sh ${D}${sbindir}/cw-drive-setup.sh
+    install -m 0755 ${S}/cw-drive-setup.sh ${D}${sbindir}/cw-drive-setup.sh
 }
 
 FILES:${PN} += "${sbindir}/cw-drive-setup.sh"

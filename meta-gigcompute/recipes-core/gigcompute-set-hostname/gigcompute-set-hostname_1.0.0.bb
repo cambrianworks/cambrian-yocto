@@ -15,13 +15,14 @@ inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "gigcompute-set-hostname.service"
 SYSTEMD_AUTO_ENABLE = "enable"
+S = "${UNPACKDIR}"
 
 do_install() {
     install -d ${D}${sbindir}
-    install -m 0755 ${WORKDIR}/gigcompute-set-hostname.sh ${D}${sbindir}/gigcompute-set-hostname.sh
+    install -m 0755 ${S}/gigcompute-set-hostname.sh ${D}${sbindir}/gigcompute-set-hostname.sh
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/gigcompute-set-hostname.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${S}/gigcompute-set-hostname.service ${D}${systemd_unitdir}/system/
 }
 
 RDEPENDS:${PN} += "bash coreutils"

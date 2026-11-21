@@ -1,3 +1,5 @@
+Upstream-Status: Backport
+
 --- a/lib/assoc_array.c
 +++ b/lib/assoc_array.c
 @@ -255,7 +255,8 @@

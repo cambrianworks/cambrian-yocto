@@ -5,10 +5,8 @@ LICENSE = "BSD-2-Clause"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=090209293ddf61f16b0e114228ddb6ea"
 
 SRC_URI = "git://github.com/wilicc/gpu-burn.git;branch=master;protocol=https"
-SRCREV = "3ead140434da9473582b68452f7115967a7a0581"
-
+SRCREV = "0d19c94dcb2e9b6858b7586a4c327674cd67113b"
 PV = "1.0.1"
-S = "${WORKDIR}/git"
 
 DEPENDS = "cuda-toolkit"
 RDEPENDS:${PN} += " cuda-cudart"
@@ -18,6 +16,7 @@ inherit cuda
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += " \
+    file://0001-include-sstream.patch \
     file://compare-orin.fatbin \
 "
 
@@ -39,6 +38,7 @@ do_compile() {
     # for the target is used.
     sed -i 's/g++/$(CXX)/g' ${S}/Makefile
     sed -i 's/gcc/$(CC)/g' ${S}/Makefile
+    sed -i '/-Wl,-rpath=/d' ${S}/Makefile
 
     export HOST_CC_BIN="$(echo ${CC} | cut -d' ' -f1)"
 
@@ -59,7 +59,7 @@ do_install() {
     install -m 0755 gpu_burn ${D}${bindir}/gpu-burn
 
     install -d ${D}${GPU_BURN_BINDIR}
-    install -m 0644 ${WORKDIR}/compare-orin.fatbin ${D}${GPU_BURN_BINDIR}/compare.ptx
+    install -m 0644 ${UNPACKDIR}/compare-orin.fatbin ${D}${GPU_BURN_BINDIR}/compare.ptx
 }
 
 FILES:${PN} += "${bindir}/gpu-burn"

@@ -1,3 +1,5 @@
+Upstream-Status: Inappropriate [Platform specialisation]
+
 --- a/hardware/nvidia/t23x/nv-public/overlay/tegra234-p3737-0000+p3701-0000-dynamic.dts
 +++ b/hardware/nvidia/t23x/nv-public/overlay/tegra234-p3737-0000+p3701-0000-dynamic.dts
 @@ -6,7 +6,6 @@
