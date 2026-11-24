@@ -113,7 +113,7 @@
 	fragment@2 {
 		target-path = "/";
 		__overlay__ {
-			pps0: pps-gpio-0 {
+			pps-gpio-8 {
 				status = "okay";
 				compatible = "pps-gpio";
 				gpios = <&gpio_aon 9 0>;
@@ -126,7 +126,7 @@
 	fragment@3 {
 		target-path = "/";
 		__overlay__ {
-			pps1: pps-gpio-1 {
+			pps-gpio-9 {
 				status = "okay";
 				compatible = "pps-gpio";
 				gpios = <&gpio_aon 8 0>;
