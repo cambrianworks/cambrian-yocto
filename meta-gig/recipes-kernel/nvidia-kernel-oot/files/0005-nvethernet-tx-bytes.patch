@@ -1,0 +1,36 @@
+Upstream-Status: Pending [To be released by Nvidia in future JetPack release]
+
+--- a/nvidia-oot/drivers/net/ethernet/nvidia/nvethernet/osd.c
++++ b/nvidia-oot/drivers/net/ethernet/nvidia/nvethernet/osd.c
+@@ -711,12 +711,6 @@ static void osd_transmit_complete(void *priv,
+ 	unsigned int chan, qinx;
+ 	unsigned int len = swcx->len;
+
+-	if ((ULLONG_MAX - ndev->stats.tx_bytes) <= (len)) {
+-		ndev->stats.tx_bytes = len;
+-	} else {
+-		ndev->stats.tx_bytes += len;
+-	}
+-
+ #ifdef BW_TEST
+ 	if (pdata->test_tx_bandwidth == OSI_ENABLE) {
+ 		return;
+@@ -747,6 +741,18 @@ static void osd_transmit_complete(void *priv,
+ 			netif_tx_wake_queue(txq);
+ 			netdev_dbg(ndev, "Tx ring[%d] - waking Txq\n", chan);
+ 		}
++
++		/*
++		 * Use skb->len (whole-packet L2 length) rather than swcx->len
++		 * (per-descriptor DMA fragment); skb is attached only to the
++		 * last descriptor, so this accounts each packet once and
++		 * matches in-tree NIC convention. Excludes FCS and per-segment
++		 * TSO headers; for true wire bytes read the MAC MMC
++		 * tx_octetcount_g{,b} counters exposed via ethtool -S.
++		 */
++		ndev->stats.tx_bytes = update_stats_counter(ndev->stats.tx_bytes,
++							    skb->len);
++
+ 		if (ndev->stats.tx_packets == ULLONG_MAX) {
+ 			ndev->stats.tx_packets = 0;
+ 		} else {

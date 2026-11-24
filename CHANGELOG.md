@@ -32,6 +32,7 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **[nvidia-kernel-oot]** - Add patch to ensure correct reporting of tx_bytes for eth6i.
 - **[cw-flash-emmc]** - Flashing script to replace functionality of deprecated doflash.sh script.
 - **[libnvvm]** - NVIDIA virtual machine compiler libraries.
 - **[tegra-container-passthrough]** - Container runtime configurations for Yocto filesystems.

@@ -23,11 +23,16 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 #
 # 0004-disable-isp.patch
 # Disable unneeded camera ISP blocks.
+#
+# 0005-nvethernet-tx-bytes.patch
+# Prevent incorrect tx_bytes values being reported for eth6i. Full explanation:
+# https://forums.developer.nvidia.com/t/nvethernet-driver-tx-byte-counter-integer-underflow-petabyte-spikes-when-tso-is-enabled-on-jetpack-7-2-orin-agx/377210
 SRC_URI += " \
     file://0001-USB-peripheral-mode.patch \
     file://0002-remove-camera-module.patch \
     file://0003-enable-uarts.patch \
     file://0004-disable-isp.patch \
+    file://0005-nvethernet-tx-bytes.patch \
     file://tegra234-p3701-0008-gr002007.dts \
 "
 
