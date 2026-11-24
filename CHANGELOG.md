@@ -8,6 +8,7 @@ The format is based on [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **[nvidia-kernel-oot]** - Relabel PPS inputs to reflect their GPIO pin.
 - **[KAS base configuration]** - Advance from scarthgap branch to wrynose.
 - **[nvidia-kernel-oot]** - Updated PCIe MSI handling patch to match updated kernel source.
 - **[nvidia-kernel-oot]** - Updated patches to include Upstream-Status (now mandatory).
